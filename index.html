@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Français">
+<meta name="theme-color" content="#EEF1EF">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<title>Français Kartei</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap">
+<style>
+/* Layout: eine schmale Lernspalte wie ein Karteikasten, Navigation unten am Daumen */
+:root{
+  --bg:#EEF1EF; --surface:#FFFFFF; --sunk:#E2E7E5; --ink:#14201E; --muted:#5B6866; --line:#D2DAD7;
+  --accent:#0B6A8A; --accent-ink:#FFFFFF; --accent-soft:#D9ECF2; --saffron:#C98A0B;
+  --again:#B9382A; --hard:#A86A12; --good:#277F4F; --easy:#0B6A8A;
+  --display:"Fraunces","Atkinson Hyperlegible",Georgia,serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0C1314; --surface:#151E20; --sunk:#1C2729; --ink:#E4EAEA; --muted:#93A2A2; --line:#283537;
+  --accent:#5CC4E0; --accent-ink:#0C1314; --accent-soft:#16343D; --saffron:#EDB43C;
+  --again:#E26A5C; --hard:#DDA344; --good:#4DBE83; --easy:#5CC4E0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C1314; --surface:#151E20; --sunk:#1C2729; --ink:#E4EAEA; --muted:#93A2A2; --line:#283537;
+  --accent:#5CC4E0; --accent-ink:#0C1314; --accent-soft:#16343D; --saffron:#EDB43C;
+  --again:#E26A5C; --hard:#DDA344; --good:#4DBE83; --easy:#5CC4E0; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{max-width:520px;margin:0 auto;padding-inline:16px;padding-block:12px calc(92px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px;min-height:100%}
+header{display:flex;align-items:center;gap:10px}
+header h1{font-family:var(--display);font-weight:700;font-size:22px;margin:0;letter-spacing:.01em}
+header .star{width:26px;height:26px;color:var(--accent);flex:none}
+.sync{margin-left:auto;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--muted);display:block}
+.sync.on i{background:var(--good)}
+.sync.busy i{background:var(--saffron)}
+.lbl{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.today{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.today div{display:flex;flex-direction:column;gap:2px}
+.today b{font-family:var(--display);font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.today .n b{color:var(--accent)} .today .l b{color:var(--again)} .today .r b{color:var(--good)}
+.today span{font-size:13px;color:var(--muted)}
+.btn{border:0;border-radius:12px;padding:14px 18px;font-weight:700;background:var(--sunk)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);font-size:18px;width:100%}
+.btn:disabled{opacity:.5;cursor:default}
+.goal p{margin:6px 0 0;font-size:14px;color:var(--muted)}
+.bar{height:10px;border-radius:5px;background:var(--sunk);overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.bar .s{background:var(--good)} .bar .le{background:var(--saffron)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:middle;background:var(--c)}
+.decks{display:flex;flex-direction:column;gap:12px}
+.deck{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center}
+.deck b{font-weight:700}
+.deck small{color:var(--muted);font-variant-numeric:tabular-nums}
+.deck .bar{grid-column:1/-1;height:6px}
+
+/* Lernen */
+.counts{display:flex;gap:14px;font-size:14px;font-variant-numeric:tabular-nums;align-items:center}
+.counts .n{color:var(--accent)} .counts .l{color:var(--again)} .counts .r{color:var(--good)}
+.counts .x{background:none;border:0;color:var(--muted);padding:6px 4px}
+.counts .x:disabled{opacity:.35;cursor:default}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;min-height:340px;padding:40px 20px 34px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;position:relative;cursor:pointer;user-select:none;-webkit-user-select:none}
+.card .cat{position:absolute;top:14px;left:16px}
+.card .tag{position:absolute;top:12px;right:14px;font-size:12px;color:var(--muted);background:var(--sunk);border-radius:20px;padding:3px 10px}
+.front{font-size:26px;font-weight:700;text-wrap:balance}
+.front.big{font-family:var(--display);font-size:64px;line-height:1.1}
+.hr{width:48px;height:2px;background:var(--line);margin:6px 0}
+.frl{display:flex;align-items:center;justify-content:center;gap:8px;max-width:100%}
+.fr{font-family:var(--display);font-size:32px;font-weight:700;color:var(--accent);text-wrap:balance;line-height:1.2}
+.fr.long{font-size:25px}
+.say{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;padding:0}
+.say svg{width:22px;height:22px}
+.say.on{background:var(--accent);color:var(--accent-ink)}
+.aus{font-size:17px;color:var(--ink);letter-spacing:.02em}
+.aus::before{content:"sprich  ";font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.sub{font-size:16px;color:var(--muted);text-wrap:balance}
+.tap{font-size:13px;color:var(--muted)}
+.edit{position:absolute;bottom:10px;right:14px;background:none;border:0;color:var(--muted);font-size:13px;padding:6px}
+.grades{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.grades button{border:0;border-radius:12px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--sunk);font-weight:700}
+.grades button small{font-weight:400;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.grades .g1{color:var(--again)} .grades .g2{color:var(--hard)} .grades .g3{color:var(--good)} .grades .g4{color:var(--easy)}
+.done{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;padding:32px 16px}
+.done .star{width:56px;height:56px;color:var(--saffron)}
+.done h2{font-family:var(--display);margin:0;font-size:26px}
+.done p{margin:0;color:var(--muted);max-width:34ch}
+
+/* Kartei */
+.search{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:6px 12px;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.list{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:11px 14px;border:0;border-top:1px solid var(--line);background:none;text-align:left;width:100%}
+.row:first-child{border-top:0}
+.row .d{min-width:0}
+.row .d b{font-weight:700;color:var(--accent)}
+.row .d div{font-size:14px;color:var(--muted)}
+.st{align-self:center;font-size:12px;border-radius:20px;padding:2px 9px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.st.le{color:var(--hard)} .st.rv{color:var(--good)} .st.ok{background:var(--good);color:var(--surface)}
+.more{padding:12px}
+
+/* Einstellungen */
+.set{display:flex;flex-direction:column;gap:14px}
+.set h3{margin:0;font-size:16px}
+.set p{margin:0;color:var(--muted);font-size:14px}
+.range{display:flex;align-items:center;gap:12px}
+.range input{flex:1;accent-color:var(--accent)}
+.range b{font-family:var(--display);font-size:24px;min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--sunk);border-radius:12px;padding:4px;gap:4px}
+.seg.two{grid-template-columns:1fr 1fr}
+.seg button{border:0;background:none;border-radius:9px;padding:9px 4px;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--surface);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.sl{display:flex;flex-direction:column;gap:6px}
+.sl span{font-size:14px;font-weight:700}
+select.voice{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:11px 12px;font-size:16px}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px}
+.keys b{font-family:var(--display);color:var(--accent)}
+.danger{color:var(--again)}
+
+/* Sheet */
+.sheet{position:fixed;inset:0;background:rgba(10,14,20,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet form{background:var(--surface);width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+.sheet h2{margin:0;font-family:var(--display);font-size:20px}
+.sheet label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.sheet input{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:11px 12px;font-size:16px;color:var(--ink)}
+.sheet .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.sheet .acts .btn.save{background:var(--accent);color:var(--accent-ink)}
+
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:6px 16px calc(6px + env(safe-area-inset-bottom,0px));z-index:10}
+nav div{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+nav button{border:0;background:none;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted)}
+nav button svg{width:22px;height:22px}
+nav button[aria-current="page"]{color:var(--accent);font-weight:700}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:20px;font-size:14px;z-index:30;max-width:calc(100% - 32px);text-align:center}
+@media (prefers-reduced-motion:no-preference){.card.flip{animation:flip .18s ease-out}@keyframes flip{from{transform:scale(.985);opacity:.7}to{transform:none;opacity:1}}}
+</style>
+
+</head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="bulle" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h16v11H11l-5 4v-4H4z"/><path d="M8 9.5h8M8 12.5h5" stroke-linecap="round"/></g></symbol>
+  <symbol id="hp" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z" fill="currentColor"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></g></symbol>
+</svg>
+
+<div class="app">
+  <header>
+    <svg class="star"><use href="#bulle"/></svg>
+    <h1>Français Kartei</h1>
+    <div class="sync" id="sync"><i></i><span>Lokal</span></div>
+  </header>
+  <main id="view"></main>
+</div>
+
+<nav aria-label="Bereiche"><div>
+  <button data-tab="lernen" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="13" height="15" rx="2"/><path d="M8 3h11a2 2 0 0 1 2 2v13"/></svg>Lernen</button>
+  <button data-tab="kartei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Kartei</button>
+  <button data-tab="setup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Einstellungen</button>
+</div></nav>
+
+<script>
+const BASE = [{"id":"z01","k":"num","c":"Zahlen","de":"11","fr":"onze","aus":"õz"},{"id":"z02","k":"num","c":"Zahlen","de":"12","fr":"douze","aus":"dus"},{"id":"z03","k":"num","c":"Zahlen","de":"13","fr":"treize","aus":"träz"},{"id":"z04","k":"num","c":"Zahlen","de":"14","fr":"quatorze","aus":"ka-tors"},{"id":"z05","k":"num","c":"Zahlen","de":"15","fr":"quinze","aus":"kẽz"},{"id":"z06","k":"num","c":"Zahlen","de":"16","fr":"seize","aus":"säz"},{"id":"z07","k":"num","c":"Zahlen","de":"17","fr":"dix-sept","aus":"di-sät"},{"id":"z08","k":"num","c":"Zahlen","de":"18","fr":"dix-huit","aus":"di-zwit"},{"id":"z09","k":"num","c":"Zahlen","de":"19","fr":"dix-neuf","aus":"dis-nöf"},{"id":"z10","k":"num","c":"Zahlen","de":"20","fr":"vingt","aus":"vẽ"},{"id":"z11","k":"num","c":"Zahlen","de":"21","fr":"vingt et un","aus":"vẽ-te-ẽ"},{"id":"z12","k":"num","c":"Zahlen","de":"22","fr":"vingt-deux","aus":"vẽt-dö"},{"id":"z13","k":"num","c":"Zahlen","de":"30","fr":"trente","aus":"trãt"},{"id":"z14","k":"num","c":"Zahlen","de":"40","fr":"quarante","aus":"ka-rãt"},{"id":"z15","k":"num","c":"Zahlen","de":"50","fr":"cinquante","aus":"sẽ-kãt"},{"id":"z16","k":"num","c":"Zahlen","de":"60","fr":"soixante","aus":"swa-sãt"},{"id":"z17","k":"num","c":"Zahlen","de":"70","fr":"soixante-dix","aus":"swa-sãt-dis"},{"id":"z18","k":"num","c":"Zahlen","de":"71","fr":"soixante et onze","aus":"swa-sãt-e-õz"},{"id":"z19","k":"num","c":"Zahlen","de":"75","fr":"soixante-quinze","aus":"swa-sãt-kẽz"},{"id":"z20","k":"num","c":"Zahlen","de":"80","fr":"quatre-vingts","aus":"ka-trö-vẽ"},{"id":"z21","k":"num","c":"Zahlen","de":"81","fr":"quatre-vingt-un","aus":"ka-trö-vẽ-ẽ"},{"id":"z22","k":"num","c":"Zahlen","de":"90","fr":"quatre-vingt-dix","aus":"ka-trö-vẽ-dis"},{"id":"z23","k":"num","c":"Zahlen","de":"95","fr":"quatre-vingt-quinze","aus":"ka-trö-vẽ-kẽz"},{"id":"z24","k":"num","c":"Zahlen","de":"99","fr":"quatre-vingt-dix-neuf","aus":"ka-trö-vẽ-dis-nöf"},{"id":"z25","k":"num","c":"Zahlen","de":"100","fr":"cent","aus":"sã"},{"id":"z26","k":"num","c":"Zahlen","de":"150","fr":"cent cinquante","aus":"sã sẽ-kãt"},{"id":"z27","k":"num","c":"Zahlen","de":"200","fr":"deux cents","aus":"dö sã"},{"id":"z28","k":"num","c":"Zahlen","de":"250","fr":"deux cent cinquante","aus":"dö sã sẽ-kãt"},{"id":"z29","k":"num","c":"Zahlen","de":"500","fr":"cinq cents","aus":"sẽ sã"},{"id":"z30","k":"num","c":"Zahlen","de":"1000","fr":"mille","aus":"mil"},{"id":"z31","k":"num","c":"Zahlen","de":"2000","fr":"deux mille","aus":"dö mil"},{"id":"z32","k":"num","c":"Zahlen","de":"2026","fr":"deux mille vingt-six","aus":"dö mil vẽt-sis"},{"id":"z33","k":"num","c":"Zahlen","de":"10 000","fr":"dix mille","aus":"di mil"},{"id":"z34","k":"num","c":"Zahlen","de":"1 000 000","fr":"un million","aus":"ẽ mi-ljõ"},{"id":"z35","k":"num","c":"Zahlen","de":"der / die / das erste","fr":"le premier / la première","aus":"prö-mje / prö-mjär"},{"id":"z36","k":"num","c":"Zahlen","de":"der / die / das zweite","fr":"le deuxième / la deuxième","aus":"dö-zjäm"},{"id":"z37","k":"num","c":"Zahlen","de":"die Hälfte","fr":"la moitié","aus":"mwa-tje"},{"id":"z38","k":"num","c":"Zahlen","de":"ein Viertel","fr":"un quart","aus":"ẽ kar"},{"id":"z39","k":"num","c":"Zahlen","de":"0,5 (null Komma fünf)","fr":"zéro virgule cinq","aus":"vir-gül"},{"id":"z40","k":"num","c":"Zahlen","de":"19,50 Dirham","fr":"dix-neuf dirhams cinquante","aus":"dis-nöf dir-am sẽ-kãt"},{"id":"f001","k":"wort","c":"Alltag","de":"ich muss ...","fr":"je dois ...","aus":"shö dwa"},{"id":"f002","k":"wort","c":"Smalltalk","de":"Freut mich","fr":"enchanté / enchantée","aus":"ã-schã-te"},{"id":"f003","k":"wort","c":"Uni","de":"die Uni","fr":"la fac","aus":"fak"},{"id":"f004","k":"wort","c":"Einkaufen","de":"Wie viel kostet das?","fr":"ça coûte combien ?","aus":"sa kut kõ-bjẽ"},{"id":"f005","k":"wort","c":"Behörden","de":"der Reisepass","fr":"le passeport","aus":"pas-por"},{"id":"f006","k":"wort","c":"Arzt","de":"der Arzt / die Ärztin","fr":"le médecin","aus":"med-sẽ"},{"id":"f007","k":"wort","c":"Bank","de":"die Bankfiliale","fr":"une agence bancaire","aus":"a-shãs bã-kär"},{"id":"f008","k":"wort","c":"Alltag","de":"ich kann nicht","fr":"je ne peux pas","aus":"shö nö pö pa"},{"id":"f009","k":"wort","c":"Smalltalk","de":"Woher kommst du?","fr":"tu viens d'où ?","aus":"tü vjẽ du"},{"id":"f010","k":"wort","c":"Uni","de":"die Übung (Kleingruppe)","fr":"le TD (travaux dirigés)","aus":"te-de"},{"id":"f011","k":"wort","c":"Einkaufen","de":"Das ist zu teuer","fr":"c'est trop cher"},{"id":"f012","k":"wort","c":"Behörden","de":"der Aufenthaltstitel","fr":"le titre de séjour","aus":"titr dö se-shur"},{"id":"f013","k":"wort","c":"Arzt","de":"Ich muss zum Arzt","fr":"je dois aller chez le médecin"},{"id":"f014","k":"wort","c":"Alltag","de":"ich möchte ...","fr":"je voudrais ...","aus":"shö vu-drä"},{"id":"f015","k":"wort","c":"Bank","de":"ein Konto eröffnen","fr":"ouvrir un compte","aus":"kõt"},{"id":"f016","k":"wort","c":"Smalltalk","de":"Ich komme aus Deutschland","fr":"je viens d'Allemagne","aus":"dal-manj"},{"id":"f017","k":"wort","c":"Uni","de":"der Hörsaal","fr":"un amphi","aus":"ã-fi"},{"id":"f018","k":"wort","c":"Einkaufen","de":"Können Sie mir einen Preis machen?","fr":"vous pouvez me faire un prix ?"},{"id":"f019","k":"wort","c":"Alltag","de":"ich brauche ...","fr":"j'ai besoin de ...","aus":"shä bö-zwẽ dö"},{"id":"f020","k":"wort","c":"Behörden","de":"die Aufenthaltskarte","fr":"la carte de séjour"},{"id":"f021","k":"wort","c":"Arzt","de":"Ich brauche einen Arzt","fr":"j'ai besoin d'un médecin"},{"id":"f022","k":"wort","c":"Bank","de":"das Konto","fr":"le compte","aus":"kõt"},{"id":"f023","k":"wort","c":"Alltag","de":"Gibt es ...?","fr":"il y a ... ?","aus":"il-ja"},{"id":"f024","k":"wort","c":"Smalltalk","de":"Ich bin Deutscher","fr":"je suis allemand","aus":"al-mã"},{"id":"f025","k":"wort","c":"Uni","de":"der Raum","fr":"la salle"},{"id":"f026","k":"wort","c":"Einkaufen","de":"Was ist Ihr letzter Preis?","fr":"c'est quoi votre dernier prix ?"},{"id":"f027","k":"wort","c":"Behörden","de":"das Visum","fr":"le visa","aus":"vi-za"},{"id":"f028","k":"wort","c":"Arzt","de":"die Arztpraxis","fr":"le cabinet médical"},{"id":"f029","k":"wort","c":"Alltag","de":"Es gibt kein ... mehr","fr":"il n'y a plus de ...","aus":"il nja plü dö"},{"id":"f030","k":"wort","c":"Smalltalk","de":"Ich mache ein Austauschsemester","fr":"je fais un semestre d'échange","aus":"dö-schãsh"},{"id":"f031","k":"wort","c":"Uni","de":"der Stundenplan","fr":"un emploi du temps","aus":"ã-plwa dü tã"},{"id":"f032","k":"wort","c":"Einkaufen","de":"Ich schaue nur","fr":"je regarde seulement","aus":"söl-mã"},{"id":"f033","k":"wort","c":"Bank","de":"das Girokonto","fr":"le compte courant","aus":"kõt ku-rã"},{"id":"f034","k":"wort","c":"Behörden","de":"das Ausweisdokument","fr":"la pièce d'identité","aus":"pjäs di-dã-ti-te"},{"id":"f035","k":"wort","c":"Alltag","de":"müssen","fr":"devoir (je dois)","aus":"dö-vwar (shö dwa)"},{"id":"f036","k":"wort","c":"Arzt","de":"der Allgemeinarzt","fr":"le généraliste","aus":"she-ne-ra-list"},{"id":"f037","k":"wort","c":"Smalltalk","de":"Ich studiere Wirtschaft","fr":"j'étudie l'économie","aus":"le-ko-no-mi"},{"id":"f038","k":"wort","c":"Uni","de":"die Prüfung","fr":"un examen","aus":"eg-za-mẽ"},{"id":"f039","k":"wort","c":"Einkaufen","de":"Ich nehme das","fr":"je prends ça"},{"id":"f040","k":"wort","c":"Alltag","de":"können","fr":"pouvoir (je peux)","aus":"pu-vwar (shö pö)"},{"id":"f041","k":"wort","c":"Bank","de":"die Bankkarte","fr":"la carte bancaire","aus":"bã-kär"},{"id":"f042","k":"wort","c":"Behörden","de":"das Formular","fr":"le formulaire","aus":"for-mü-lär"},{"id":"f043","k":"wort","c":"Smalltalk","de":"Seit wann bist du hier?","fr":"tu es là depuis quand ?","aus":"dö-pwi kã"},{"id":"f044","k":"wort","c":"Uni","de":"die Zwischenprüfung","fr":"le partiel","aus":"par-själ"},{"id":"f045","k":"wort","c":"Einkaufen","de":"Geben Sie mir ..., bitte","fr":"donnez-moi ..., s'il vous plaît"},{"id":"f046","k":"wort","c":"Alltag","de":"wollen","fr":"vouloir (je veux)","aus":"vu-lwar (shö vö)"},{"id":"f047","k":"wort","c":"Arzt","de":"der Facharzt","fr":"le spécialiste"},{"id":"f048","k":"wort","c":"Behörden","de":"ein Formular ausfüllen","fr":"remplir un formulaire","aus":"rã-plir"},{"id":"f049","k":"wort","c":"Bank","de":"die Geheimzahl","fr":"le code secret","aus":"kod sö-krä"},{"id":"f050","k":"wort","c":"Alltag","de":"machen","fr":"faire (je fais)","aus":"fär (shö fä)"},{"id":"f051","k":"wort","c":"Smalltalk","de":"Seit September","fr":"depuis septembre"},{"id":"f052","k":"wort","c":"Uni","de":"die Nachprüfung","fr":"le rattrapage","aus":"ra-tra-pash"},{"id":"f053","k":"wort","c":"Einkaufen","de":"Haben Sie ...?","fr":"vous avez ... ?"},{"id":"f054","k":"wort","c":"Arzt","de":"das Krankenhaus","fr":"un hôpital","aus":"o-pi-tal"},{"id":"f055","k":"wort","c":"Alltag","de":"nehmen","fr":"prendre (je prends)","aus":"prãdr (shö prã)"},{"id":"f056","k":"wort","c":"Behörden","de":"unterschreiben","fr":"signer (je signe)","aus":"si-nje"},{"id":"f057","k":"wort","c":"Smalltalk","de":"Ich bleibe bis Januar","fr":"je reste jusqu'en janvier","aus":"shüs-kã shã-vje"},{"id":"f058","k":"wort","c":"Uni","de":"die Note","fr":"la note"},{"id":"f059","k":"wort","c":"Einkaufen","de":"Haben Sie das in ...? (Größe, Farbe)","fr":"vous l'avez en ... ?"},{"id":"f060","k":"wort","c":"Bank","de":"der Geldautomat","fr":"le guichet automatique (GAB)","aus":"gi-schä o-to-ma-tik"},{"id":"f061","k":"wort","c":"Alltag","de":"wissen","fr":"savoir (je sais)","aus":"sa-vwar (shö sä)"},{"id":"f062","k":"wort","c":"Arzt","de":"die Privatklinik","fr":"la clinique"},{"id":"f063","k":"wort","c":"Behörden","de":"die Unterschrift","fr":"la signature","aus":"si-nja-tür"},{"id":"f064","k":"wort","c":"Smalltalk","de":"Mein Französisch ist nicht sehr gut","fr":"mon français n'est pas très bon"},{"id":"f065","k":"wort","c":"Uni","de":"eine Prüfung bestehen","fr":"réussir un examen","aus":"re-ü-sir"},{"id":"f066","k":"wort","c":"Einkaufen","de":"die Größe (Kleidung)","fr":"la taille","aus":"taj"},{"id":"f067","k":"wort","c":"Alltag","de":"weil","fr":"parce que","aus":"pars-kö"},{"id":"f068","k":"wort","c":"Bank","de":"Geld abheben","fr":"retirer de l'argent","aus":"rö-ti-re"},{"id":"f069","k":"wort","c":"Arzt","de":"die Notaufnahme","fr":"les urgences (f)","aus":"le-zür-shãs"},{"id":"f070","k":"wort","c":"Alltag","de":"dann / also (im Gespräch)","fr":"alors","aus":"a-lor"},{"id":"f071","k":"wort","c":"Smalltalk","de":"Ich spreche ein bisschen Französisch","fr":"je parle un peu français","aus":"ẽ pö"},{"id":"f072","k":"wort","c":"Uni","de":"durchfallen","fr":"rater un examen"},{"id":"f073","k":"wort","c":"Einkaufen","de":"Kann ich das anprobieren?","fr":"je peux l'essayer ?"},{"id":"f074","k":"wort","c":"Behörden","de":"das Passfoto","fr":"la photo d'identité"},{"id":"f075","k":"wort","c":"Bank","de":"Geld einzahlen","fr":"déposer de l'argent"},{"id":"f076","k":"wort","c":"Alltag","de":"also / deshalb","fr":"donc","aus":"dõk"},{"id":"f077","k":"wort","c":"Arzt","de":"der Notfall","fr":"une urgence","aus":"ür-shãs"},{"id":"f078","k":"wort","c":"Smalltalk","de":"Ich verstehe mehr, als ich spreche","fr":"je comprends mieux que je ne parle","aus":"mjö"},{"id":"f079","k":"wort","c":"Uni","de":"der Professor / die Professorin","fr":"le prof / la prof"},{"id":"f080","k":"wort","c":"Einkaufen","de":"die Umkleide","fr":"la cabine d'essayage","aus":"e-sä-jash"},{"id":"f081","k":"wort","c":"Behörden","de":"die Kopie","fr":"la photocopie"},{"id":"f082","k":"wort","c":"Alltag","de":"trotzdem","fr":"quand même","aus":"kã mäm"},{"id":"f083","k":"wort","c":"Smalltalk","de":"Wie sagt man ... auf Französisch?","fr":"comment on dit ... en français ?","aus":"ko-mã-tõ di"},{"id":"f084","k":"wort","c":"Uni","de":"der Dozent / die Dozentin","fr":"un enseignant / une enseignante","aus":"ã-sä-njã"},{"id":"f085","k":"wort","c":"Bank","de":"Geld wechseln","fr":"changer de l'argent"},{"id":"f086","k":"wort","c":"Einkaufen","de":"zu groß / zu klein","fr":"trop grand / trop petit"},{"id":"f087","k":"wort","c":"Arzt","de":"Rufen Sie einen Krankenwagen!","fr":"appelez une ambulance !","aus":"ã-bü-lãs"},{"id":"f088","k":"wort","c":"Behörden","de":"eine Kopie machen","fr":"faire une copie"},{"id":"f089","k":"wort","c":"Alltag","de":"schon","fr":"déjà","aus":"de-sha"},{"id":"f090","k":"wort","c":"Smalltalk","de":"Was bedeutet das?","fr":"qu'est-ce que ça veut dire ?","aus":"käs-kö sa vö dir"},{"id":"f091","k":"wort","c":"Uni","de":"das Studierendensekretariat","fr":"la scolarité","aus":"sko-la-ri-te"},{"id":"f092","k":"wort","c":"Einkaufen","de":"die Kasse","fr":"la caisse","aus":"käs"},{"id":"f093","k":"wort","c":"Alltag","de":"noch / wieder","fr":"encore","aus":"ã-kor"},{"id":"f094","k":"wort","c":"Bank","de":"die Wechselstube","fr":"le bureau de change"},{"id":"f095","k":"wort","c":"Arzt","de":"Ich möchte einen Termin","fr":"je voudrais un rendez-vous"},{"id":"f096","k":"wort","c":"Behörden","de":"die beglaubigte Kopie","fr":"la copie certifiée conforme","aus":"sär-ti-fje kõ-form"},{"id":"f097","k":"wort","c":"Alltag","de":"noch nicht","fr":"pas encore","aus":"pa-zã-kor"},{"id":"f098","k":"wort","c":"Smalltalk","de":"Kannst du langsamer sprechen?","fr":"tu peux parler plus lentement ?","aus":"lãt-mã"},{"id":"f099","k":"wort","c":"Uni","de":"die Anwesenheitsliste","fr":"la feuille de présence","aus":"föj dö pre-zãs"},{"id":"f100","k":"wort","c":"Einkaufen","de":"die Tüte","fr":"le sac"},{"id":"f101","k":"wort","c":"Behörden","de":"beglaubigen lassen","fr":"faire légaliser","aus":"le-ga-li-ze"},{"id":"f102","k":"wort","c":"Arzt","de":"Ich bin krank","fr":"je suis malade"},{"id":"f103","k":"wort","c":"Alltag","de":"nie","fr":"ne ... jamais","aus":"sha-mä"},{"id":"f104","k":"wort","c":"Bank","de":"der Wechselkurs","fr":"le taux de change","aus":"to dö schãsh"},{"id":"f105","k":"wort","c":"Smalltalk","de":"Kannst du das wiederholen?","fr":"tu peux répéter ?"},{"id":"f106","k":"wort","c":"Uni","de":"abwesend","fr":"absent / absente","aus":"ap-sã / ap-sãt"},{"id":"f107","k":"wort","c":"Einkaufen","de":"Brauchen Sie eine Tüte?","fr":"vous voulez un sac ?"},{"id":"f108","k":"wort","c":"Alltag","de":"sofort","fr":"tout de suite","aus":"tut swit"},{"id":"f109","k":"wort","c":"Behörden","de":"der Stempel","fr":"le cachet","aus":"ka-schä"},{"id":"f110","k":"wort","c":"Arzt","de":"Mir geht es nicht gut","fr":"je ne me sens pas bien","aus":"sã"},{"id":"f111","k":"wort","c":"Bank","de":"die Überweisung","fr":"le virement","aus":"vir-mã"},{"id":"f112","k":"wort","c":"Smalltalk","de":"Ich habe nicht verstanden","fr":"je n'ai pas compris","aus":"kõ-pri"},{"id":"f113","k":"wort","c":"Uni","de":"Ich war krank, deshalb war ich nicht da","fr":"j'étais malade, c'est pour ça que j'étais absent"},{"id":"f114","k":"wort","c":"Einkaufen","de":"das Kleingeld / Wechselgeld","fr":"la monnaie","aus":"mo-nä"},{"id":"f115","k":"wort","c":"Alltag","de":"später","fr":"plus tard","aus":"plü tar"},{"id":"f116","k":"wort","c":"Behörden","de":"die Gebührenmarke","fr":"le timbre fiscal","aus":"tẽbr fis-kal"},{"id":"f117","k":"wort","c":"Alltag","de":"zu spät / verspätet","fr":"en retard","aus":"ã rö-tar"},{"id":"f118","k":"wort","c":"Arzt","de":"Ich fühle mich besser","fr":"je me sens mieux","aus":"mjö"},{"id":"f119","k":"wort","c":"Smalltalk","de":"Kannst du es mir aufschreiben?","fr":"tu peux me l'écrire ?"},{"id":"f120","k":"wort","c":"Uni","de":"die Hausarbeit / Abgabe","fr":"le devoir","aus":"dö-vwar"},{"id":"f121","k":"wort","c":"Einkaufen","de":"Haben Sie Kleingeld?","fr":"vous avez de la monnaie ?"},{"id":"f122","k":"wort","c":"Bank","de":"eine Überweisung machen","fr":"faire un virement"},{"id":"f123","k":"wort","c":"Alltag","de":"pünktlich","fr":"à l'heure","aus":"a lör"},{"id":"f124","k":"wort","c":"Behörden","de":"die Wohnsitzbescheinigung","fr":"le certificat de résidence","aus":"sär-ti-fi-ka"},{"id":"f125","k":"wort","c":"Smalltalk","de":"Was machst du am Wochenende?","fr":"tu fais quoi ce week-end ?"},{"id":"f126","k":"wort","c":"Uni","de":"abgeben","fr":"rendre (je rends)","aus":"rãdr (shö rã)"},{"id":"f127","k":"wort","c":"Einkaufen","de":"der Kassenzettel","fr":"le ticket de caisse"},{"id":"f128","k":"wort","c":"Arzt","de":"Ich habe Kopfschmerzen","fr":"j'ai mal à la tête"},{"id":"f129","k":"wort","c":"Alltag","de":"Wie spät ist es?","fr":"il est quelle heure ?","aus":"i-lä käl ör"},{"id":"f130","k":"wort","c":"Bank","de":"die Bankverbindung","fr":"le RIB (relevé d'identité bancaire)","aus":"rib"},{"id":"f131","k":"wort","c":"Behörden","de":"der Wohnnachweis","fr":"le justificatif de domicile","aus":"shüs-ti-fi-ka-tif"},{"id":"f132","k":"wort","c":"Smalltalk","de":"Hast du Lust, ... zu ...?","fr":"ça te dit de ... ?","aus":"sa tö di dö"},{"id":"f133","k":"wort","c":"Uni","de":"die Deadline","fr":"la date limite"},{"id":"f134","k":"wort","c":"Einkaufen","de":"umtauschen","fr":"échanger (j'échange)","aus":"e-schã-she"},{"id":"f135","k":"wort","c":"Alltag","de":"Um wie viel Uhr?","fr":"à quelle heure ?","aus":"a käl ör"},{"id":"f136","k":"wort","c":"Arzt","de":"Ich habe Bauchschmerzen","fr":"j'ai mal au ventre","aus":"vãtr"},{"id":"f137","k":"wort","c":"Bank","de":"der Kontostand","fr":"le solde","aus":"sold"},{"id":"f138","k":"wort","c":"Smalltalk","de":"gerne / mit Vergnügen","fr":"avec plaisir","aus":"plä-zir"},{"id":"f139","k":"wort","c":"Uni","de":"Bis wann ist das?","fr":"c'est pour quand ?"},{"id":"f140","k":"wort","c":"Einkaufen","de":"Geld zurückgeben","fr":"rembourser (je rembourse)","aus":"rã-bur-se"},{"id":"f141","k":"wort","c":"Alltag","de":"halb drei","fr":"deux heures et demie","aus":"dö-zör e dö-mi"},{"id":"f142","k":"wort","c":"Behörden","de":"die Bescheinigung","fr":"une attestation","aus":"a-tes-ta-sjõ"},{"id":"f143","k":"wort","c":"Arzt","de":"Ich habe Halsschmerzen","fr":"j'ai mal à la gorge","aus":"gorsh"},{"id":"f144","k":"wort","c":"Alltag","de":"Viertel nach vier","fr":"quatre heures et quart","aus":"ka-trör e kar"},{"id":"f145","k":"wort","c":"Smalltalk","de":"gerne (zustimmend)","fr":"volontiers","aus":"vo-lõ-tje"},{"id":"f146","k":"wort","c":"Uni","de":"Wird das benotet?","fr":"est-ce que c'est noté ?"},{"id":"f147","k":"wort","c":"Einkaufen","de":"das Sonderangebot","fr":"la promo"},{"id":"f148","k":"wort","c":"Behörden","de":"die Einschreibebescheinigung","fr":"une attestation d'inscription"},{"id":"f149","k":"wort","c":"Bank","de":"die Gebühren","fr":"les frais (m)","aus":"frä"},{"id":"f150","k":"wort","c":"Alltag","de":"Mittag (12 Uhr)","fr":"midi"},{"id":"f151","k":"wort","c":"Arzt","de":"Es tut hier weh","fr":"ça fait mal ici"},{"id":"f152","k":"wort","c":"Smalltalk","de":"gute Idee","fr":"bonne idée"},{"id":"f153","k":"wort","c":"Uni","de":"das Referat","fr":"un exposé","aus":"eks-po-ze"},{"id":"f154","k":"wort","c":"Einkaufen","de":"der Ausverkauf","fr":"les soldes (m)","aus":"sold"},{"id":"f155","k":"wort","c":"Behörden","de":"der Mietvertrag","fr":"le contrat de bail","aus":"baj"},{"id":"f156","k":"wort","c":"Alltag","de":"heute Abend","fr":"ce soir","aus":"sö swar"},{"id":"f157","k":"wort","c":"Bank","de":"das Limit","fr":"le plafond","aus":"pla-fõ"},{"id":"f158","k":"wort","c":"Arzt","de":"Ich habe Fieber","fr":"j'ai de la fièvre","aus":"fjävr"},{"id":"f159","k":"wort","c":"Smalltalk","de":"kein Problem","fr":"pas de souci","aus":"pa d su-si"},{"id":"f160","k":"wort","c":"Uni","de":"ein Referat halten","fr":"présenter un exposé"},{"id":"f161","k":"wort","c":"Einkaufen","de":"nicht vorrätig","fr":"en rupture de stock","aus":"rüp-tür"},{"id":"f162","k":"wort","c":"Alltag","de":"diese Woche","fr":"cette semaine","aus":"sät sö-män"},{"id":"f163","k":"wort","c":"Behörden","de":"der Termin","fr":"le rendez-vous","aus":"rã-de-vu"},{"id":"f164","k":"wort","c":"Bank","de":"die Karte sperren","fr":"bloquer la carte"},{"id":"f165","k":"wort","c":"Alltag","de":"nächste Woche","fr":"la semaine prochaine","aus":"pro-schän"},{"id":"f166","k":"wort","c":"Smalltalk","de":"macht nichts","fr":"ce n'est pas grave"},{"id":"f167","k":"wort","c":"Uni","de":"die Folie","fr":"la diapo","aus":"dja-po"},{"id":"f168","k":"wort","c":"Einkaufen","de":"die Marke","fr":"la marque","aus":"mark"},{"id":"f169","k":"wort","c":"Arzt","de":"der Husten","fr":"la toux","aus":"tu"},{"id":"f170","k":"wort","c":"Behörden","de":"einen Termin vereinbaren","fr":"prendre rendez-vous"},{"id":"f171","k":"wort","c":"Alltag","de":"letzte Woche","fr":"la semaine dernière","aus":"där-njär"},{"id":"f172","k":"wort","c":"Smalltalk","de":"alles klar / passt","fr":"ça marche","aus":"sa marsch"},{"id":"f173","k":"wort","c":"Uni","de":"die Gruppenarbeit","fr":"le travail de groupe","aus":"tra-vaj"},{"id":"f174","k":"wort","c":"Einkaufen","de":"das Produkt","fr":"le produit","aus":"pro-dwi"},{"id":"f175","k":"wort","c":"Bank","de":"Der Automat hat meine Karte eingezogen","fr":"le distributeur a avalé ma carte","aus":"dis-tri-bü-tör a a-va-le"},{"id":"f176","k":"wort","c":"Arzt","de":"die Erkältung","fr":"le rhume","aus":"rüm"},{"id":"f177","k":"wort","c":"Alltag","de":"übermorgen","fr":"après-demain","aus":"a-prä-dö-mẽ"},{"id":"f178","k":"wort","c":"Behörden","de":"eine Nummer ziehen","fr":"prendre un ticket"},{"id":"f179","k":"wort","c":"Smalltalk","de":"kommt drauf an","fr":"ça dépend","aus":"de-pã"},{"id":"f180","k":"wort","c":"Uni","de":"Wer macht was?","fr":"qui fait quoi ?"},{"id":"f181","k":"wort","c":"Einkaufen","de":"die Abteilung / das Regal","fr":"le rayon","aus":"rä-jõ"},{"id":"f182","k":"wort","c":"Alltag","de":"vorgestern","fr":"avant-hier","aus":"a-vã-tjär"},{"id":"f183","k":"wort","c":"Bank","de":"Meine Karte funktioniert nicht","fr":"ma carte ne marche pas"},{"id":"f184","k":"wort","c":"Arzt","de":"die Grippe","fr":"la grippe"},{"id":"f185","k":"wort","c":"Behörden","de":"Schlange stehen","fr":"faire la queue","aus":"kö"},{"id":"f186","k":"wort","c":"Smalltalk","de":"natürlich","fr":"bien sûr","aus":"bjẽ sür"},{"id":"f187","k":"wort","c":"Uni","de":"Ich kümmere mich um ...","fr":"je m'occupe de ...","aus":"mo-küp"},{"id":"f188","k":"wort","c":"Einkaufen","de":"der Lebensmittelladen","fr":"une épicerie","aus":"e-pis-ri"},{"id":"f189","k":"wort","c":"Alltag","de":"das Wochenende","fr":"le week-end"},{"id":"f190","k":"wort","c":"Bank","de":"Meine Karte ist abgelaufen","fr":"ma carte a expiré"},{"id":"f191","k":"wort","c":"Alltag","de":"seit","fr":"depuis","aus":"dö-pwi"},{"id":"f192","k":"wort","c":"Arzt","de":"Mir ist übel","fr":"j'ai la nausée","aus":"no-ze"},{"id":"f193","k":"wort","c":"Behörden","de":"der Schalter","fr":"le guichet","aus":"gi-schä"},{"id":"f194","k":"wort","c":"Smalltalk","de":"genau","fr":"exactement","aus":"eg-zak-tö-mã"},{"id":"f195","k":"wort","c":"Uni","de":"Wir teilen die Arbeit auf","fr":"on se répartit le travail","aus":"re-par-ti"},{"id":"f196","k":"wort","c":"Einkaufen","de":"der Markt","fr":"le marché"},{"id":"f197","k":"wort","c":"Alltag","de":"vor (zeitlich: vor zwei Tagen)","fr":"il y a (il y a deux jours)","aus":"il-ja dö shur"},{"id":"f198","k":"wort","c":"Behörden","de":"Wer ist der Letzte?","fr":"qui est le dernier ?"},{"id":"f199","k":"wort","c":"Smalltalk","de":"wirklich?","fr":"vraiment ?","aus":"vrä-mã"},{"id":"f200","k":"wort","c":"Uni","de":"Treffen wir uns?","fr":"on se retrouve ?","aus":"rö-truv"},{"id":"f201","k":"wort","c":"Einkaufen","de":"die Bäckerei","fr":"la boulangerie","aus":"bu-lãsh-ri"},{"id":"f202","k":"wort","c":"Arzt","de":"Ich muss mich übergeben","fr":"je vais vomir"},{"id":"f203","k":"wort","c":"Bank","de":"die Zahlung","fr":"le paiement","aus":"pä-mã"},{"id":"f204","k":"wort","c":"Alltag","de":"während","fr":"pendant","aus":"pã-dã"},{"id":"f205","k":"wort","c":"Smalltalk","de":"Ach wirklich? / Ach so?","fr":"ah bon ?"},{"id":"f206","k":"wort","c":"Uni","de":"Kannst du mir die Folien schicken?","fr":"tu peux m'envoyer les diapos ?"},{"id":"f207","k":"wort","c":"Einkaufen","de":"die Metzgerei","fr":"la boucherie","aus":"busch-ri"},{"id":"f208","k":"wort","c":"Behörden","de":"Welche Unterlagen brauche ich?","fr":"quels documents faut-il ?","aus":"fo-til"},{"id":"f209","k":"wort","c":"Alltag","de":"oft","fr":"souvent","aus":"su-vã"},{"id":"f210","k":"wort","c":"Arzt","de":"der Durchfall","fr":"la diarrhée","aus":"dja-re"},{"id":"f211","k":"wort","c":"Bank","de":"kontaktlos zahlen","fr":"payer sans contact"},{"id":"f212","k":"wort","c":"Alltag","de":"manchmal","fr":"parfois","aus":"par-fwa"},{"id":"f213","k":"wort","c":"Smalltalk","de":"Ich stimme zu","fr":"je suis d'accord"},{"id":"f214","k":"wort","c":"Uni","de":"das Kursmaterial","fr":"le support de cours","aus":"sü-por"},{"id":"f215","k":"wort","c":"Einkaufen","de":"ein Kilo ...","fr":"un kilo de ..."},{"id":"f216","k":"wort","c":"Behörden","de":"Es fehlt ein Dokument","fr":"il manque un document","aus":"mãk"},{"id":"f217","k":"wort","c":"Arzt","de":"Mir ist schwindelig","fr":"j'ai des vertiges","aus":"vär-tish"},{"id":"f218","k":"wort","c":"Alltag","de":"bald","fr":"bientôt","aus":"bjẽ-to"},{"id":"f219","k":"wort","c":"Bank","de":"bar","fr":"en espèces","aus":"ã-nes-päs"},{"id":"f220","k":"wort","c":"Smalltalk","de":"Ich bin nicht einverstanden","fr":"je ne suis pas d'accord"},{"id":"f221","k":"wort","c":"Uni","de":"die Zusammenfassung","fr":"le résumé","aus":"re-zü-me"},{"id":"f222","k":"wort","c":"Einkaufen","de":"ein halbes Kilo","fr":"un demi-kilo"},{"id":"f223","k":"wort","c":"Behörden","de":"die Akte / der Antrag (Unterlagen)","fr":"le dossier","aus":"do-sje"},{"id":"f224","k":"wort","c":"Alltag","de":"bei mir (zu Hause)","fr":"chez moi","aus":"sche mwa"},{"id":"f225","k":"wort","c":"Arzt","de":"Ich bin erschöpft","fr":"je suis épuisé","aus":"e-pwi-ze"},{"id":"f226","k":"wort","c":"Smalltalk","de":"Du hast recht","fr":"tu as raison","aus":"rä-zõ"},{"id":"f227","k":"wort","c":"Uni","de":"die Hausaufgaben","fr":"les devoirs (m)"},{"id":"f228","k":"wort","c":"Einkaufen","de":"eine Flasche","fr":"une bouteille","aus":"bu-täj"},{"id":"f229","k":"wort","c":"Bank","de":"mit Karte","fr":"par carte"},{"id":"f230","k":"wort","c":"Alltag","de":"ohne","fr":"sans","aus":"sã"},{"id":"f231","k":"wort","c":"Behörden","de":"Die Akte ist vollständig","fr":"le dossier est complet"},{"id":"f232","k":"wort","c":"Arzt","de":"Ich kann nicht schlafen","fr":"je n'arrive pas à dormir"},{"id":"f233","k":"wort","c":"Alltag","de":"neben","fr":"à côté de","aus":"a ko-te dö"},{"id":"f234","k":"wort","c":"Smalltalk","de":"meiner Meinung nach","fr":"à mon avis","aus":"a mõ-na-vi"},{"id":"f235","k":"wort","c":"Uni","de":"die Fallstudie","fr":"une étude de cas","aus":"e-tüd dö ka"},{"id":"f236","k":"wort","c":"Einkaufen","de":"eine Packung","fr":"un paquet","aus":"pa-kä"},{"id":"f237","k":"wort","c":"Bank","de":"das Bargeld","fr":"le liquide","aus":"li-kid"},{"id":"f238","k":"wort","c":"Behörden","de":"einen Antrag einreichen","fr":"déposer un dossier"},{"id":"f239","k":"wort","c":"Alltag","de":"gegenüber","fr":"en face de","aus":"ã fas dö"},{"id":"f240","k":"wort","c":"Smalltalk","de":"Ich glaube schon","fr":"je crois que oui"},{"id":"f241","k":"wort","c":"Uni","de":"der Bericht","fr":"le rapport","aus":"ra-por"},{"id":"f242","k":"wort","c":"Einkaufen","de":"eine Schachtel / Dose","fr":"une boîte","aus":"bwat"},{"id":"f243","k":"wort","c":"Arzt","de":"seit gestern","fr":"depuis hier","aus":"dö-pwi jär"},{"id":"f244","k":"wort","c":"Alltag","de":"weit weg von","fr":"loin de","aus":"lwẽ dö"},{"id":"f245","k":"wort","c":"Behörden","de":"Wann kann ich ihn abholen?","fr":"quand est-ce que je peux le récupérer ?"},{"id":"f246","k":"wort","c":"Bank","de":"die Münze","fr":"la pièce","aus":"pjäs"},{"id":"f247","k":"wort","c":"Smalltalk","de":"Ich glaube nicht","fr":"je ne crois pas"},{"id":"f248","k":"wort","c":"Uni","de":"die Gliederung","fr":"le plan","aus":"plã"},{"id":"f249","k":"wort","c":"Einkaufen","de":"ein Stück","fr":"un morceau","aus":"mor-so"},{"id":"f250","k":"wort","c":"Arzt","de":"seit drei Tagen","fr":"depuis trois jours"},{"id":"f251","k":"wort","c":"Alltag","de":"nah bei","fr":"près de","aus":"prä dö"},{"id":"f252","k":"wort","c":"Behörden","de":"Wie lange dauert das?","fr":"ça prend combien de temps ?"},{"id":"f253","k":"wort","c":"Smalltalk","de":"Keine Ahnung","fr":"aucune idée","aus":"o-kü-ni-de"},{"id":"f254","k":"wort","c":"Uni","de":"die Einleitung","fr":"une introduction","aus":"ẽ-tro-dük-sjõ"},{"id":"f255","k":"wort","c":"Bank","de":"der Geldschein","fr":"le billet de banque","aus":"bi-jä"},{"id":"f256","k":"wort","c":"Einkaufen","de":"ein bisschen mehr","fr":"un peu plus","aus":"plüs"},{"id":"f257","k":"wort","c":"Alltag","de":"geradeaus","fr":"tout droit","aus":"tu drwa"},{"id":"f258","k":"wort","c":"Arzt","de":"Ist das schlimm?","fr":"c'est grave ?"},{"id":"f259","k":"wort","c":"Behörden","de":"Ist das kostenlos?","fr":"c'est gratuit ?","aus":"gra-twi"},{"id":"f260","k":"wort","c":"Alltag","de":"an der Ecke","fr":"au coin","aus":"o kwẽ"},{"id":"f261","k":"wort","c":"Smalltalk","de":"Das ist super","fr":"c'est génial","aus":"she-njal"},{"id":"f262","k":"wort","c":"Uni","de":"das Fazit","fr":"la conclusion","aus":"kõ-klü-zjõ"},{"id":"f263","k":"wort","c":"Einkaufen","de":"Das reicht","fr":"ça suffit","aus":"sa sü-fi"},{"id":"f264","k":"wort","c":"Bank","de":"der Betrag","fr":"le montant","aus":"mõ-tã"},{"id":"f265","k":"wort","c":"Alltag","de":"Wo ist ...?","fr":"où est ... ?","aus":"u ä"},{"id":"f266","k":"wort","c":"Arzt","de":"der Schmerz","fr":"la douleur","aus":"du-lör"},{"id":"f267","k":"wort","c":"Behörden","de":"die Bearbeitungsgebühr","fr":"les frais de dossier (m)","aus":"frä"},{"id":"f268","k":"wort","c":"Smalltalk","de":"Das ist schade","fr":"c'est dommage","aus":"do-mash"},{"id":"f269","k":"wort","c":"Uni","de":"die Quelle","fr":"la source"},{"id":"f270","k":"wort","c":"Einkaufen","de":"Noch etwas?","fr":"autre chose ?","aus":"otr schos"},{"id":"f271","k":"wort","c":"Alltag","de":"das Viertel","fr":"le quartier","aus":"kar-tje"},{"id":"f272","k":"wort","c":"Bank","de":"die Summe","fr":"le total"},{"id":"f273","k":"wort","c":"Arzt","de":"Ich bin allergisch gegen ...","fr":"je suis allergique à ...","aus":"a-lär-shik"},{"id":"f274","k":"wort","c":"Smalltalk","de":"Das gefällt mir","fr":"ça me plaît","aus":"plä"},{"id":"f275","k":"wort","c":"Uni","de":"die Datei","fr":"le fichier","aus":"fi-schje"},{"id":"f276","k":"wort","c":"Einkaufen","de":"Das ist alles","fr":"c'est tout","aus":"tu"},{"id":"f277","k":"wort","c":"Behörden","de":"die Empfangsbestätigung","fr":"le récépissé","aus":"re-se-pi-se"},{"id":"f278","k":"wort","c":"Alltag","de":"die Haltestelle","fr":"un arrêt","aus":"ẽ-na-rä"},{"id":"f279","k":"wort","c":"Bank","de":"der Kontoauszug","fr":"le relevé de compte","aus":"rö-lö-ve"},{"id":"f280","k":"wort","c":"Alltag","de":"die Straßenbahn","fr":"le tram"},{"id":"f281","k":"wort","c":"Smalltalk","de":"Ich liebe das","fr":"j'adore"},{"id":"f282","k":"wort","c":"Uni","de":"hochladen","fr":"mettre en ligne","aus":"ã linj"},{"id":"f283","k":"wort","c":"Einkaufen","de":"das Hähnchen","fr":"le poulet","aus":"pu-lä"},{"id":"f284","k":"wort","c":"Arzt","de":"das Rezept","fr":"une ordonnance","aus":"or-do-nãs"},{"id":"f285","k":"wort","c":"Behörden","de":"die Ausländerbehörde","fr":"le service des étrangers","aus":"e-trã-she"},{"id":"f286","k":"wort","c":"Alltag","de":"der Bahnhof","fr":"la gare"},{"id":"f287","k":"wort","c":"Smalltalk","de":"Ich mag ... nicht so sehr","fr":"je n'aime pas trop ..."},{"id":"f288","k":"wort","c":"Uni","de":"die Plattform","fr":"la plateforme"},{"id":"f289","k":"wort","c":"Einkaufen","de":"das Hackfleisch","fr":"la viande hachée","aus":"vjãd a-sche"},{"id":"f290","k":"wort","c":"Bank","de":"Welche Gebühren gibt es?","fr":"quels sont les frais ?"},{"id":"f291","k":"wort","c":"Arzt","de":"das Medikament","fr":"le médicament","aus":"me-di-ka-mã"},{"id":"f292","k":"wort","c":"Behörden","de":"die Polizeiwache","fr":"le commissariat","aus":"ko-mi-sa-rja"},{"id":"f293","k":"wort","c":"Alltag","de":"das Sammeltaxi","fr":"le grand taxi"},{"id":"f294","k":"wort","c":"Smalltalk","de":"Ich freue mich auf ...","fr":"j'ai hâte de ...","aus":"shä at dö"},{"id":"f295","k":"wort","c":"Uni","de":"die E-Mail","fr":"le mail","aus":"mäl"},{"id":"f296","k":"wort","c":"Einkaufen","de":"das Rindfleisch","fr":"le bœuf","aus":"böf"},{"id":"f297","k":"wort","c":"Alltag","de":"das kleine Stadttaxi","fr":"le petit taxi"},{"id":"f298","k":"wort","c":"Behörden","de":"die Botschaft","fr":"une ambassade","aus":"ã-ba-sad"},{"id":"f299","k":"wort","c":"Arzt","de":"die Tablette","fr":"le comprimé","aus":"kõ-pri-me"},{"id":"f300","k":"wort","c":"Bank","de":"die Abhebung","fr":"le retrait","aus":"rö-trä"},{"id":"f301","k":"wort","c":"Smalltalk","de":"Was gibt's Neues?","fr":"quoi de neuf ?","aus":"kwa d nöf"},{"id":"f302","k":"wort","c":"Uni","de":"der Anhang (E-Mail)","fr":"la pièce jointe","aus":"pjäs shwẽt"},{"id":"f303","k":"wort","c":"Einkaufen","de":"der Fisch","fr":"le poisson","aus":"pwa-sõ"},{"id":"f304","k":"wort","c":"Alltag","de":"Können Sie den Taxameter anmachen?","fr":"Vous pouvez mettre le compteur ?","aus":"kõ-tör"},{"id":"f305","k":"wort","c":"Behörden","de":"das Konsulat","fr":"le consulat","aus":"kõ-sü-la"},{"id":"f306","k":"wort","c":"Arzt","de":"der Sirup","fr":"le sirop","aus":"si-ro"},{"id":"f307","k":"wort","c":"Alltag","de":"Lassen Sie mich hier raus","fr":"Déposez-moi ici","aus":"de-po-ze mwa i-si"},{"id":"f308","k":"wort","c":"Bank","de":"die Einzahlung","fr":"le dépôt","aus":"de-po"},{"id":"f309","k":"wort","c":"Smalltalk","de":"Nichts Besonderes","fr":"rien de spécial","aus":"rjẽ"},{"id":"f310","k":"wort","c":"Uni","de":"das Fach","fr":"la matière","aus":"ma-tjär"},{"id":"f311","k":"wort","c":"Einkaufen","de":"die Eier","fr":"les œufs (m)","aus":"le-zö"},{"id":"f312","k":"wort","c":"Behörden","de":"die Staatsangehörigkeit","fr":"la nationalité"},{"id":"f313","k":"wort","c":"Alltag","de":"Wie viel kostet es bis ...?","fr":"C'est combien jusqu'à ... ?","aus":"shüs-ka"},{"id":"f314","k":"wort","c":"Arzt","de":"die Salbe","fr":"la pommade"},{"id":"f315","k":"wort","c":"Smalltalk","de":"Ich auch nicht","fr":"moi non plus","aus":"mwa nõ plü"},{"id":"f316","k":"wort","c":"Uni","de":"Ich habe eine Frage","fr":"j'ai une question","aus":"käs-tjõ"},{"id":"f317","k":"wort","c":"Einkaufen","de":"der Käse","fr":"le fromage"},{"id":"f318","k":"wort","c":"Bank","de":"der Berater / die Beraterin","fr":"le conseiller / la conseillère","aus":"kõ-se-je / kõ-se-jär"},{"id":"f319","k":"wort","c":"Alltag","de":"warten","fr":"attendre (j'attends)","aus":"a-tãdr (sha-tã)"},{"id":"f320","k":"wort","c":"Behörden","de":"das Geburtsdatum","fr":"la date de naissance","aus":"nä-sãs"},{"id":"f321","k":"wort","c":"Smalltalk","de":"vielleicht","fr":"peut-être","aus":"pö-tätr"},{"id":"f322","k":"wort","c":"Uni","de":"Darf ich etwas fragen?","fr":"je peux poser une question ?"},{"id":"f323","k":"wort","c":"Einkaufen","de":"die Butter","fr":"le beurre","aus":"bör"},{"id":"f324","k":"wort","c":"Arzt","de":"dreimal täglich","fr":"trois fois par jour"},{"id":"f325","k":"wort","c":"Alltag","de":"suchen","fr":"chercher (je cherche)","aus":"schär-sche"},{"id":"f326","k":"wort","c":"Bank","de":"der Kredit","fr":"le crédit","aus":"kre-di"},{"id":"f327","k":"wort","c":"Behörden","de":"der Geburtsort","fr":"le lieu de naissance","aus":"ljö"},{"id":"f328","k":"wort","c":"Alltag","de":"finden","fr":"trouver (je trouve)"},{"id":"f329","k":"wort","c":"Smalltalk","de":"Gleichfalls (bei Wünschen)","fr":"toi aussi / vous aussi"},{"id":"f330","k":"wort","c":"Uni","de":"Ich bin nicht sicher","fr":"je ne suis pas sûr"},{"id":"f331","k":"wort","c":"Einkaufen","de":"das Mehl","fr":"la farine"},{"id":"f332","k":"wort","c":"Arzt","de":"vor dem Essen","fr":"avant les repas","aus":"rö-pa"},{"id":"f333","k":"wort","c":"Alltag","de":"vergessen","fr":"oublier (j'oublie)","aus":"u-bli-je"},{"id":"f334","k":"wort","c":"Bank","de":"die Zinsen","fr":"les intérêts (m)","aus":"le-zẽ-te-rä"},{"id":"f335","k":"wort","c":"Behörden","de":"der Nachname","fr":"le nom de famille"},{"id":"f336","k":"wort","c":"Smalltalk","de":"Wo wohnst du?","fr":"tu habites où ?","aus":"tü a-bit u"},{"id":"f337","k":"wort","c":"Uni","de":"Können Sie das wiederholen?","fr":"pouvez-vous répéter ?"},{"id":"f338","k":"wort","c":"Einkaufen","de":"der Reis","fr":"le riz","aus":"ri"},{"id":"f339","k":"wort","c":"Alltag","de":"verlieren","fr":"perdre (je perds)","aus":"pärdr (shö pär)"},{"id":"f340","k":"wort","c":"Arzt","de":"nach dem Essen","fr":"après les repas"},{"id":"f341","k":"wort","c":"Smalltalk","de":"Ich wohne in Casablanca","fr":"j'habite à Casablanca","aus":"sha-bit"},{"id":"f342","k":"wort","c":"Uni","de":"Können Sie langsamer sprechen?","fr":"pouvez-vous parler plus lentement ?"},{"id":"f343","k":"wort","c":"Einkaufen","de":"die Nudeln","fr":"les pâtes (f)","aus":"pat"},{"id":"f344","k":"wort","c":"Behörden","de":"der Vorname","fr":"le prénom","aus":"pre-nõ"},{"id":"f345","k":"wort","c":"Bank","de":"sparen","fr":"économiser (j'économise)","aus":"e-ko-no-mi-ze"},{"id":"f346","k":"wort","c":"Alltag","de":"schicken","fr":"envoyer (j'envoie)","aus":"ã-vwa-je"},{"id":"f347","k":"wort","c":"Arzt","de":"die Notdienst-Apotheke","fr":"la pharmacie de garde"},{"id":"f348","k":"wort","c":"Smalltalk","de":"Was machst du beruflich?","fr":"qu'est-ce que tu fais dans la vie ?"},{"id":"f349","k":"wort","c":"Uni","de":"Können Sie das an die Tafel schreiben?","fr":"vous pouvez l'écrire au tableau ?","aus":"ta-blo"},{"id":"f350","k":"wort","c":"Einkaufen","de":"das Öl","fr":"une huile","aus":"ü-il"},{"id":"f351","k":"wort","c":"Alltag","de":"anrufen","fr":"appeler (j'appelle)","aus":"ap-le (sha-päl)"},{"id":"f352","k":"wort","c":"Behörden","de":"die Adresse","fr":"une adresse"},{"id":"f353","k":"wort","c":"Bank","de":"ausgeben","fr":"dépenser (je dépense)","aus":"de-pã-se"},{"id":"f354","k":"wort","c":"Alltag","de":"bezahlen","fr":"payer (je paie)","aus":"pä-je (shö pä)"},{"id":"f355","k":"wort","c":"Arzt","de":"Haben Sie etwas gegen ...?","fr":"vous avez quelque chose contre ... ?"},{"id":"f356","k":"wort","c":"Smalltalk","de":"Hast du Geschwister?","fr":"tu as des frères et sœurs ?","aus":"sör"},{"id":"f357","k":"wort","c":"Uni","de":"Was muss man vorbereiten?","fr":"qu'est-ce qu'il faut préparer ?"},{"id":"f358","k":"wort","c":"Einkaufen","de":"das Salz","fr":"le sel"},{"id":"f359","k":"wort","c":"Behörden","de":"ledig","fr":"célibataire","aus":"se-li-ba-tär"},{"id":"f360","k":"wort","c":"Alltag","de":"öffnen","fr":"ouvrir (j'ouvre)","aus":"u-vrir (shuvr)"},{"id":"f361","k":"wort","c":"Bank","de":"das Budget","fr":"le budget","aus":"büd-shä"},{"id":"f362","k":"wort","c":"Smalltalk","de":"der Freund / die Freundin (Beziehung)","fr":"le copain / la copine","aus":"ko-pẽ / ko-pin"},{"id":"f363","k":"wort","c":"Uni","de":"Kommt das in der Prüfung dran?","fr":"est-ce que ça tombe à l'examen ?","aus":"tõb"},{"id":"f364","k":"wort","c":"Einkaufen","de":"der Pfeffer","fr":"le poivre","aus":"pwavr"},{"id":"f365","k":"wort","c":"Arzt","de":"das ärztliche Attest","fr":"le certificat médical"},{"id":"f366","k":"wort","c":"Alltag","de":"schließen","fr":"fermer (je ferme)"},{"id":"f367","k":"wort","c":"Behörden","de":"der Beruf","fr":"la profession"},{"id":"f368","k":"wort","c":"Smalltalk","de":"ein Freund / eine Freundin","fr":"un ami / une amie","aus":"ẽ-na-mi / ü-na-mi"},{"id":"f369","k":"wort","c":"Uni","de":"Ich bin Austauschstudent","fr":"je suis étudiant en échange","aus":"e-tü-djã ã-ne-schãsh"},{"id":"f370","k":"wort","c":"Einkaufen","de":"das Gemüse","fr":"les légumes (m)","aus":"le-güm"},{"id":"f371","k":"wort","c":"Bank","de":"die Rechnung (zu bezahlen)","fr":"la facture","aus":"fak-tür"},{"id":"f372","k":"wort","c":"Alltag","de":"anfangen","fr":"commencer (je commence)","aus":"ko-mã-se"},{"id":"f373","k":"wort","c":"Arzt","de":"die Krankenversicherung","fr":"une assurance maladie"},{"id":"f374","k":"wort","c":"Behörden","de":"das Original","fr":"un original","aus":"o-ri-shi-nal"},{"id":"f375","k":"wort","c":"Alltag","de":"beenden / fertig werden","fr":"finir (je finis)"},{"id":"f376","k":"wort","c":"Smalltalk","de":"Meine Freundin besucht mich","fr":"ma copine vient me voir"},{"id":"f377","k":"wort","c":"Uni","de":"der Student / die Studentin","fr":"un étudiant / une étudiante","aus":"e-tü-djã / e-tü-djãt"},{"id":"f378","k":"wort","c":"Einkaufen","de":"das Obst","fr":"les fruits (m)","aus":"frwi"},{"id":"f379","k":"wort","c":"Bank","de":"eine Rechnung bezahlen","fr":"payer une facture"},{"id":"f380","k":"wort","c":"Arzt","de":"die Zusatzversicherung","fr":"la mutuelle","aus":"mü-tü-äl"},{"id":"f381","k":"wort","c":"Behörden","de":"gültig","fr":"valable"},{"id":"f382","k":"wort","c":"Alltag","de":"verstehen","fr":"comprendre (je comprends)","aus":"kõ-prãdr"},{"id":"f383","k":"wort","c":"Smalltalk","de":"Hast du WhatsApp?","fr":"tu as WhatsApp ?"},{"id":"f384","k":"wort","c":"Uni","de":"Ich studiere an der ESCA","fr":"j'étudie à l'ESCA"},{"id":"f385","k":"wort","c":"Einkaufen","de":"die Kartoffel","fr":"la pomme de terre"},{"id":"f386","k":"wort","c":"Alltag","de":"lernen","fr":"apprendre (j'apprends)","aus":"a-prãdr"},{"id":"f387","k":"wort","c":"Behörden","de":"abgelaufen","fr":"expiré"},{"id":"f388","k":"wort","c":"Arzt","de":"das Abrechnungsformular","fr":"la feuille de soins","aus":"föj dö swẽ"},{"id":"f389","k":"wort","c":"Bank","de":"die Miete überweisen","fr":"virer le loyer","aus":"vi-re lö lwa-je"},{"id":"f390","k":"wort","c":"Smalltalk","de":"Ich schreibe dir","fr":"je t'envoie un message"},{"id":"f391","k":"wort","c":"Uni","de":"die Bibliothek","fr":"la bibliothèque","aus":"bi-bli-jo-täk"},{"id":"f392","k":"wort","c":"Einkaufen","de":"die Zwiebel","fr":"un oignon","aus":"o-njõ"},{"id":"f393","k":"wort","c":"Alltag","de":"antworten","fr":"répondre (je réponds)","aus":"re-põdr"},{"id":"f394","k":"wort","c":"Behörden","de":"verlängern","fr":"renouveler (je renouvelle)","aus":"rö-nu-vle"},{"id":"f395","k":"wort","c":"Arzt","de":"die Blutabnahme","fr":"une prise de sang","aus":"priz dö sã"},{"id":"f396","k":"wort","c":"Smalltalk","de":"Gib mir deine Nummer","fr":"donne-moi ton numéro","aus":"nü-me-ro"},{"id":"f397","k":"wort","c":"Uni","de":"der Studentenausweis","fr":"la carte d'étudiant"},{"id":"f398","k":"wort","c":"Einkaufen","de":"der Knoblauch","fr":"un ail","aus":"aj"},{"id":"f399","k":"wort","c":"Alltag","de":"fragen / bitten um","fr":"demander (je demande)","aus":"dö-mã-de"},{"id":"f400","k":"wort","c":"Bank","de":"Geld schicken","fr":"envoyer de l'argent"},{"id":"f401","k":"wort","c":"Alltag","de":"sich etwas leihen","fr":"emprunter (j'emprunte)","aus":"ã-prẽ-te"},{"id":"f402","k":"wort","c":"Behörden","de":"die Verlängerung","fr":"la prolongation"},{"id":"f403","k":"wort","c":"Smalltalk","de":"Wann sehen wir uns?","fr":"on se voit quand ?"},{"id":"f404","k":"wort","c":"Uni","de":"die Immatrikulationsbescheinigung","fr":"le certificat de scolarité"},{"id":"f405","k":"wort","c":"Einkaufen","de":"die Gurke","fr":"le concombre","aus":"kõ-kõbr"},{"id":"f406","k":"wort","c":"Arzt","de":"das Röntgenbild","fr":"une radio"},{"id":"f407","k":"wort","c":"Bank","de":"der Geldtransfer","fr":"le transfert d'argent","aus":"trãs-fär"},{"id":"f408","k":"wort","c":"Alltag","de":"jemandem etwas leihen","fr":"prêter (je prête)"},{"id":"f409","k":"wort","c":"Smalltalk","de":"Bist du frei?","fr":"tu es libre ?"},{"id":"f410","k":"wort","c":"Uni","de":"das Notenblatt","fr":"le relevé de notes","aus":"rö-lö-ve dö not"},{"id":"f411","k":"wort","c":"Einkaufen","de":"die Zitrone","fr":"le citron","aus":"si-trõ"},{"id":"f412","k":"wort","c":"Behörden","de":"Ich habe meinen Pass verloren","fr":"j'ai perdu mon passeport"},{"id":"f413","k":"wort","c":"Arzt","de":"die Spritze","fr":"une piqûre","aus":"pi-kür"},{"id":"f414","k":"wort","c":"Alltag","de":"mieten","fr":"louer (je loue)","aus":"lu-e"},{"id":"f415","k":"wort","c":"Bank","de":"der Bestätigungscode","fr":"le code de vérification"},{"id":"f416","k":"wort","c":"Smalltalk","de":"Gehen wir?","fr":"on y va ?","aus":"o-ni-va"},{"id":"f417","k":"wort","c":"Uni","de":"das Learning Agreement","fr":"le contrat d'études"},{"id":"f418","k":"wort","c":"Einkaufen","de":"der Joghurt","fr":"le yaourt","aus":"ja-urt"},{"id":"f419","k":"wort","c":"Alltag","de":"weggehen / abfahren","fr":"partir (je pars)","aus":"par-tir (shö par)"},{"id":"f420","k":"wort","c":"Behörden","de":"Anzeige erstatten","fr":"porter plainte","aus":"plẽt"},{"id":"f421","k":"wort","c":"Arzt","de":"der Blutdruck","fr":"la tension","aus":"tã-sjõ"},{"id":"f422","k":"wort","c":"Alltag","de":"rausgehen / ausgehen","fr":"sortir (je sors)"},{"id":"f423","k":"wort","c":"Smalltalk","de":"Los geht's","fr":"allons-y","aus":"a-lõ-zi"},{"id":"f424","k":"wort","c":"Uni","de":"die Pause","fr":"la pause","aus":"pos"},{"id":"f425","k":"wort","c":"Bank","de":"die Banking-App","fr":"une appli","aus":"a-pli"},{"id":"f426","k":"wort","c":"Einkaufen","de":"das stille Wasser","fr":"une eau plate","aus":"o plat"},{"id":"f427","k":"wort","c":"Behörden","de":"die Verlustanzeige","fr":"une déclaration de perte"},{"id":"f428","k":"wort","c":"Alltag","de":"nach Hause kommen","fr":"rentrer (je rentre)","aus":"rã-tre"},{"id":"f429","k":"wort","c":"Arzt","de":"untersuchen","fr":"examiner (j'examine)","aus":"eg-za-mi-ne"},{"id":"f430","k":"wort","c":"Smalltalk","de":"Gehen wir einen Kaffee trinken?","fr":"on va boire un café ?"},{"id":"f431","k":"wort","c":"Uni","de":"Es fängt um ... an","fr":"ça commence à ..."},{"id":"f432","k":"wort","c":"Einkaufen","de":"das Sprudelwasser","fr":"une eau gazeuse","aus":"o ga-zöz"},{"id":"f433","k":"wort","c":"Bank","de":"das Passwort","fr":"le mot de passe","aus":"mo d pas"},{"id":"f434","k":"wort","c":"Behörden","de":"der Grund","fr":"le motif"},{"id":"f435","k":"wort","c":"Alltag","de":"ankommen","fr":"arriver (j'arrive)"},{"id":"f436","k":"wort","c":"Arzt","de":"der Zahnarzt","fr":"le dentiste"},{"id":"f437","k":"wort","c":"Smalltalk","de":"Ich lade dich ein","fr":"je t'invite","aus":"shö tẽ-vit"},{"id":"f438","k":"wort","c":"Uni","de":"Der Kurs fällt aus","fr":"le cours est annulé","aus":"a-nü-le"},{"id":"f439","k":"wort","c":"Einkaufen","de":"der Saft","fr":"le jus","aus":"shü"},{"id":"f440","k":"wort","c":"Alltag","de":"bleiben","fr":"rester (je reste)"},{"id":"f441","k":"wort","c":"Behörden","de":"der Aufenthalt","fr":"le séjour","aus":"se-shur"},{"id":"f442","k":"wort","c":"Bank","de":"sich einloggen","fr":"se connecter","aus":"ko-näk-te"},{"id":"f443","k":"wort","c":"Smalltalk","de":"Jeder zahlt für sich","fr":"chacun paie sa part","aus":"scha-kẽ pä sa par"},{"id":"f444","k":"wort","c":"Uni","de":"verschoben","fr":"reporté","aus":"rö-por-te"},{"id":"f445","k":"wort","c":"Einkaufen","de":"das Toilettenpapier","fr":"le papier toilette"},{"id":"f446","k":"wort","c":"Alltag","de":"kommen","fr":"venir (je viens)","aus":"vö-nir (shö vjẽ)"},{"id":"f447","k":"wort","c":"Arzt","de":"Ich habe Zahnschmerzen","fr":"j'ai mal aux dents","aus":"o dã"},{"id":"f448","k":"wort","c":"Behörden","de":"die Dauer","fr":"la durée","aus":"dü-re"},{"id":"f449","k":"wort","c":"Alltag","de":"versuchen / anprobieren","fr":"essayer (j'essaie)","aus":"e-sä-je"},{"id":"f450","k":"wort","c":"Bank","de":"Das Konto ist gesperrt","fr":"le compte est bloqué"},{"id":"f451","k":"wort","c":"Smalltalk","de":"Hast du kurz Zeit?","fr":"tu as deux minutes ?"},{"id":"f452","k":"wort","c":"Uni","de":"Wo ist Raum ...?","fr":"où est la salle ... ?"},{"id":"f453","k":"wort","c":"Einkaufen","de":"das Spülmittel","fr":"le liquide vaisselle","aus":"vä-säl"},{"id":"f454","k":"wort","c":"Arzt","de":"die Brille","fr":"les lunettes (f)"},{"id":"f455","k":"wort","c":"Alltag","de":"benutzen","fr":"utiliser (j'utilise)"},{"id":"f456","k":"wort","c":"Behörden","de":"der Beamte / die Beamtin","fr":"le fonctionnaire / la fonctionnaire","aus":"fõk-sjo-när"},{"id":"f457","k":"wort","c":"Smalltalk","de":"Wir sehen uns an der Uni","fr":"on se voit à la fac","aus":"fak"},{"id":"f458","k":"wort","c":"Uni","de":"das Unternehmen","fr":"une entreprise","aus":"ã-trö-priz"},{"id":"f459","k":"wort","c":"Einkaufen","de":"das Waschmittel","fr":"la lessive","aus":"le-siv"},{"id":"f460","k":"wort","c":"Bank","de":"Die Zahlung wurde abgelehnt","fr":"le paiement a été refusé","aus":"rö-fü-ze"},{"id":"f461","k":"wort","c":"Alltag","de":"glauben","fr":"croire (je crois)","aus":"krwar (shö krwa)"},{"id":"f462","k":"wort","c":"Arzt","de":"die Kontaktlinsen","fr":"les lentilles (f)","aus":"lã-tij"},{"id":"f463","k":"wort","c":"Behörden","de":"Um wie viel Uhr öffnet das Büro?","fr":"à quelle heure ouvre le bureau ?"},{"id":"f464","k":"wort","c":"Smalltalk","de":"Bis später","fr":"à tout à l'heure","aus":"a tu-ta lör"},{"id":"f465","k":"wort","c":"Uni","de":"der Lieferant","fr":"le fournisseur","aus":"fur-ni-sör"},{"id":"f466","k":"wort","c":"Einkaufen","de":"die Zahnpasta","fr":"le dentifrice","aus":"dã-ti-fris"},{"id":"f467","k":"wort","c":"Alltag","de":"denken","fr":"penser (je pense)","aus":"pã-se"},{"id":"f468","k":"wort","c":"Bank","de":"Ich möchte Euro wechseln","fr":"je voudrais changer des euros","aus":"de-zö-ro"},{"id":"f469","k":"wort","c":"Arzt","de":"die Verletzung","fr":"la blessure","aus":"ble-sür"},{"id":"f470","k":"wort","c":"Alltag","de":"sehen","fr":"voir (je vois)","aus":"vwar (shö vwa)"},{"id":"f471","k":"wort","c":"Behörden","de":"die Öffnungszeiten","fr":"les horaires (m)","aus":"o-rär"},{"id":"f472","k":"wort","c":"Smalltalk","de":"Bis bald","fr":"à plus","aus":"a plüs"},{"id":"f473","k":"wort","c":"Uni","de":"der Kunde","fr":"le client","aus":"kli-jã"},{"id":"f474","k":"wort","c":"Einkaufen","de":"die SIM-Karte","fr":"une carte SIM"},{"id":"f475","k":"wort","c":"Alltag","de":"trinken","fr":"boire (je bois)","aus":"bwar (shö bwa)"},{"id":"f476","k":"wort","c":"Bank","de":"Wie ist der Kurs heute?","fr":"quel est le taux aujourd'hui ?"},{"id":"f477","k":"wort","c":"Arzt","de":"Ich habe mich geschnitten","fr":"je me suis coupé"},{"id":"f478","k":"wort","c":"Smalltalk","de":"Schönen Abend","fr":"bonne soirée","aus":"swa-re"},{"id":"f479","k":"wort","c":"Uni","de":"die Ausschreibung","fr":"un appel d'offres","aus":"a-päl dofr"},{"id":"f480","k":"wort","c":"Einkaufen","de":"Guthaben aufladen","fr":"faire une recharge","aus":"rö-scharsh"},{"id":"f481","k":"wort","c":"Behörden","de":"Wohin muss ich gehen?","fr":"où dois-je aller ?","aus":"u dwa-sha-le"},{"id":"f482","k":"wort","c":"Alltag","de":"aufstehen","fr":"se lever (je me lève)","aus":"sö lö-ve"},{"id":"f483","k":"wort","c":"Smalltalk","de":"Schönes Wochenende","fr":"bon week-end"},{"id":"f484","k":"wort","c":"Uni","de":"das Lastenheft","fr":"le cahier des charges","aus":"ka-je de scharsh"},{"id":"f485","k":"wort","c":"Einkaufen","de":"der Handytarif","fr":"le forfait","aus":"for-fä"},{"id":"f486","k":"wort","c":"Behörden","de":"Können Sie mir beim Ausfüllen helfen?","fr":"pouvez-vous m'aider à remplir ?"},{"id":"f487","k":"wort","c":"Arzt","de":"die Verbrennung","fr":"la brûlure","aus":"brü-lür"},{"id":"f488","k":"wort","c":"Alltag","de":"aufwachen","fr":"se réveiller (je me réveille)","aus":"re-ve-je"},{"id":"f489","k":"wort","c":"Bank","de":"Wo ist der nächste Geldautomat?","fr":"où est le distributeur le plus proche ?","aus":"prosch"},{"id":"f490","k":"wort","c":"Alltag","de":"sich beeilen","fr":"se dépêcher (je me dépêche)","aus":"de-pä-sche"},{"id":"f491","k":"wort","c":"Smalltalk","de":"Viel Glück","fr":"bonne chance","aus":"schãs"},{"id":"f492","k":"wort","c":"Uni","de":"der Kostenvoranschlag","fr":"le devis","aus":"dö-vi"},{"id":"f493","k":"wort","c":"Einkaufen","de":"das Ladegerät","fr":"le chargeur","aus":"schar-shör"},{"id":"f494","k":"wort","c":"Behörden","de":"Welches Büro ist das?","fr":"c'est quel bureau ?"},{"id":"f495","k":"wort","c":"Arzt","de":"der Mückenstich","fr":"une piqûre de moustique"},{"id":"f496","k":"wort","c":"Bank","de":"Ich möchte ein Konto eröffnen","fr":"je voudrais ouvrir un compte"},{"id":"f497","k":"wort","c":"Alltag","de":"sich Sorgen machen","fr":"s'inquiéter (je m'inquiète)","aus":"sẽ-kje-te"},{"id":"f498","k":"wort","c":"Smalltalk","de":"Willkommen","fr":"bienvenue","aus":"bjẽ-vö-nü"},{"id":"f499","k":"wort","c":"Uni","de":"der Vertrag","fr":"le contrat","aus":"kõ-tra"},{"id":"f500","k":"wort","c":"Einkaufen","de":"die Batterie","fr":"la pile"},{"id":"f501","k":"wort","c":"Behörden","de":"im ersten Stock","fr":"au premier étage","aus":"prö-mje-re-tash"},{"id":"f502","k":"wort","c":"Alltag","de":"umziehen (Wohnung)","fr":"déménager (je déménage)","aus":"de-me-na-she"},{"id":"f503","k":"wort","c":"Arzt","de":"die Verstauchung","fr":"une entorse","aus":"ã-tors"},{"id":"f504","k":"wort","c":"Bank","de":"die Erstattung","fr":"le remboursement","aus":"rã-burs-mã"},{"id":"f505","k":"wort","c":"Smalltalk","de":"Herzlichen Glückwunsch","fr":"félicitations","aus":"fe-li-si-ta-sjõ"},{"id":"f506","k":"wort","c":"Uni","de":"der Umsatz","fr":"le chiffre d'affaires","aus":"schifr da-fär"},{"id":"f507","k":"wort","c":"Einkaufen","de":"bestellen","fr":"commander (je commande)","aus":"ko-mã-de"},{"id":"f508","k":"wort","c":"Alltag","de":"reservieren","fr":"réserver (je réserve)"},{"id":"f509","k":"wort","c":"Behörden","de":"im Erdgeschoss","fr":"au rez-de-chaussée","aus":"re-dö-scho-se"},{"id":"f510","k":"wort","c":"Arzt","de":"gebrochen","fr":"cassé"},{"id":"f511","k":"wort","c":"Smalltalk","de":"Alles Gute zum Geburtstag","fr":"joyeux anniversaire","aus":"shwa-jö-za-ni-vär-sär"},{"id":"f512","k":"wort","c":"Uni","de":"der Gewinn","fr":"le bénéfice","aus":"be-ne-fis"},{"id":"f513","k":"wort","c":"Einkaufen","de":"liefern lassen","fr":"se faire livrer"},{"id":"f514","k":"wort","c":"Alltag","de":"absagen / stornieren","fr":"annuler (j'annule)","aus":"a-nü-le"},{"id":"f515","k":"wort","c":"Bank","de":"die Kaution","fr":"la caution","aus":"ko-sjõ"},{"id":"f516","k":"wort","c":"Behörden","de":"Soll ich morgen wiederkommen?","fr":"je dois revenir demain ?"},{"id":"f517","k":"wort","c":"Alltag","de":"ändern / wechseln","fr":"changer (je change)","aus":"schã-she"},{"id":"f518","k":"wort","c":"Smalltalk","de":"Gute Besserung","fr":"bon rétablissement","aus":"re-ta-blis-mã"},{"id":"f519","k":"wort","c":"Uni","de":"die Kosten","fr":"les coûts (m)","aus":"ku"},{"id":"f520","k":"wort","c":"Einkaufen","de":"die Lieferung","fr":"la livraison","aus":"li-vrä-zõ"},{"id":"f521","k":"wort","c":"Arzt","de":"Ich habe mir den Knöchel verstaucht","fr":"je me suis tordu la cheville","aus":"schö-vij"},{"id":"f522","k":"wort","c":"Bank","de":"die Anzahlung","fr":"un acompte","aus":"a-kõt"},{"id":"f523","k":"wort","c":"Alltag","de":"abholen","fr":"récupérer (je récupère)","aus":"re-kü-pe-re"},{"id":"f524","k":"wort","c":"Behörden","de":"Ich verstehe das Formular nicht","fr":"je ne comprends pas le formulaire"},{"id":"f525","k":"wort","c":"Smalltalk","de":"Bitte schön (auf Danke, du)","fr":"je t'en prie","aus":"shö tã pri"},{"id":"f526","k":"wort","c":"Uni","de":"die Lieferfrist","fr":"le délai de livraison","aus":"de-lä dö li-vrä-zõ"},{"id":"f527","k":"wort","c":"Einkaufen","de":"Ein Tisch für zwei, bitte","fr":"une table pour deux, s'il vous plaît"},{"id":"f528","k":"wort","c":"Arzt","de":"das Pflaster","fr":"le pansement","aus":"pãs-mã"},{"id":"f529","k":"wort","c":"Alltag","de":"helfen","fr":"aider (j'aide)","aus":"ä-de"},{"id":"f530","k":"wort","c":"Bank","de":"pro Monat","fr":"par mois","aus":"par mwa"},{"id":"f531","k":"wort","c":"Behörden","de":"Wo muss ich unterschreiben?","fr":"où est-ce que je dois signer ?"},{"id":"f532","k":"wort","c":"Smalltalk","de":"Bitte schön (auf Danke, Sie)","fr":"je vous en prie","aus":"shö vu-zã pri"},{"id":"f533","k":"wort","c":"Uni","de":"die Verhandlung","fr":"la négociation","aus":"ne-go-sja-sjõ"},{"id":"f534","k":"wort","c":"Einkaufen","de":"die Speisekarte","fr":"la carte"},{"id":"f535","k":"wort","c":"Alltag","de":"Kannst du mir helfen?","fr":"Tu peux m'aider ?"},{"id":"f536","k":"wort","c":"Arzt","de":"der Sonnenbrand","fr":"un coup de soleil","aus":"ku d so-läj"},{"id":"f537","k":"wort","c":"Behörden","de":"Unterschreiben Sie hier","fr":"signez ici","aus":"si-nje-zi-si"},{"id":"f538","k":"wort","c":"Alltag","de":"Ich habe ... vergessen","fr":"j'ai oublié ...","aus":"sha-u-bli-je"},{"id":"f539","k":"wort","c":"Smalltalk","de":"Es tut mir wirklich leid","fr":"je suis vraiment désolé"},{"id":"f540","k":"wort","c":"Uni","de":"verhandeln","fr":"négocier (je négocie)","aus":"ne-go-sje"},{"id":"f541","k":"wort","c":"Einkaufen","de":"das Tagesgericht","fr":"le plat du jour","aus":"pla dü shur"},{"id":"f542","k":"wort","c":"Bank","de":"pro Jahr","fr":"par an"},{"id":"f543","k":"wort","c":"Arzt","de":"die Sonnencreme","fr":"la crème solaire"},{"id":"f544","k":"wort","c":"Alltag","de":"Ich habe mein Handy verloren","fr":"j'ai perdu mon portable","aus":"por-tabl"},{"id":"f545","k":"wort","c":"Smalltalk","de":"Entschuldige, ich bin zu spät","fr":"désolé, je suis en retard"},{"id":"f546","k":"wort","c":"Uni","de":"der Unternehmer / die Unternehmerin","fr":"un entrepreneur / une entrepreneuse","aus":"ã-trö-prö-nör"},{"id":"f547","k":"wort","c":"Einkaufen","de":"die Vorspeise","fr":"une entrée"},{"id":"f548","k":"wort","c":"Behörden","de":"die Post","fr":"la poste"},{"id":"f549","k":"wort","c":"Bank","de":"abbuchen","fr":"prélever","aus":"pre-lö-ve"},{"id":"f550","k":"wort","c":"Alltag","de":"Ich bin gleich da","fr":"j'arrive"},{"id":"f551","k":"wort","c":"Arzt","de":"die Lebensmittelvergiftung","fr":"une intoxication alimentaire","aus":"ẽ-tok-si-ka-sjõ"},{"id":"f552","k":"wort","c":"Smalltalk","de":"Ich bin müde","fr":"je suis fatigué"},{"id":"f553","k":"wort","c":"Uni","de":"die Ungleichheiten","fr":"les inégalités (f)","aus":"i-ne-ga-li-te"},{"id":"f554","k":"wort","c":"Einkaufen","de":"das Hauptgericht","fr":"le plat principal"},{"id":"f555","k":"wort","c":"Behörden","de":"das Paket","fr":"le colis","aus":"ko-li"},{"id":"f556","k":"wort","c":"Alltag","de":"Ich bin unterwegs","fr":"je suis en route","aus":"ã rut"},{"id":"f557","k":"wort","c":"Bank","de":"die Lastschrift","fr":"le prélèvement","aus":"pre-läv-mã"},{"id":"f558","k":"wort","c":"Smalltalk","de":"Ich habe Hunger","fr":"j'ai faim","aus":"shä fẽ"},{"id":"f559","k":"wort","c":"Uni","de":"das Netzwerk","fr":"le réseau","aus":"re-zo"},{"id":"f560","k":"wort","c":"Einkaufen","de":"der Nachtisch","fr":"le dessert","aus":"de-sär"},{"id":"f561","k":"wort","c":"Arzt","de":"Ich habe mich erkältet","fr":"j'ai attrapé un rhume"},{"id":"f562","k":"wort","c":"Alltag","de":"Warte auf mich","fr":"attends-moi","aus":"a-tã mwa"},{"id":"f563","k":"wort","c":"Behörden","de":"ein Paket schicken","fr":"envoyer un colis"},{"id":"f564","k":"wort","c":"Alltag","de":"Ich habe keine Zeit","fr":"je n'ai pas le temps","aus":"tã"},{"id":"f565","k":"wort","c":"Smalltalk","de":"Ich habe Durst","fr":"j'ai soif","aus":"shä swaf"},{"id":"f566","k":"wort","c":"Uni","de":"die Umfrage","fr":"une enquête","aus":"ã-kät"},{"id":"f567","k":"wort","c":"Einkaufen","de":"Was empfehlen Sie?","fr":"qu'est-ce que vous me conseillez ?","aus":"kõ-se-je"},{"id":"f568","k":"wort","c":"Bank","de":"der Scheck","fr":"le chèque","aus":"schäk"},{"id":"f569","k":"wort","c":"Arzt","de":"Ich nehme keine Medikamente","fr":"je ne prends pas de médicaments"},{"id":"f570","k":"wort","c":"Behörden","de":"der Briefumschlag","fr":"une enveloppe","aus":"ã-vlop"},{"id":"f571","k":"wort","c":"Alltag","de":"Ich habe es eilig","fr":"je suis pressé","aus":"pre-se"},{"id":"f572","k":"wort","c":"Smalltalk","de":"Mir ist heiß / mir ist kalt","fr":"j'ai chaud / j'ai froid","aus":"shä scho / shä frwa"},{"id":"f573","k":"wort","c":"Uni","de":"das Interview / Gespräch","fr":"un entretien","aus":"ã-trö-tjẽ"},{"id":"f574","k":"wort","c":"Einkaufen","de":"ohne Zucker, bitte","fr":"sans sucre, s'il vous plaît"},{"id":"f575","k":"wort","c":"Bank","de":"die Steuer","fr":"la taxe","aus":"taks"},{"id":"f576","k":"wort","c":"Alltag","de":"die Wohnung","fr":"un appartement","aus":"a-par-tö-mã"},{"id":"f577","k":"wort","c":"Arzt","de":"Muss ich nüchtern sein?","fr":"je dois être à jeun ?","aus":"a shẽ"},{"id":"f578","k":"wort","c":"Behörden","de":"die Briefmarke","fr":"le timbre","aus":"tẽbr"},{"id":"f579","k":"wort","c":"Smalltalk","de":"Es ist mir egal","fr":"ça m'est égal","aus":"sa mä-te-gal"},{"id":"f580","k":"wort","c":"Uni","de":"die Excel-Tabelle","fr":"un tableau Excel"},{"id":"f581","k":"wort","c":"Einkaufen","de":"zum Mitnehmen","fr":"à emporter","aus":"a ã-por-te"},{"id":"f582","k":"wort","c":"Alltag","de":"das Zimmer","fr":"la chambre","aus":"schãbr"},{"id":"f583","k":"wort","c":"Behörden","de":"der Antrag (Anfrage)","fr":"la demande"},{"id":"f584","k":"wort","c":"Arzt","de":"Wie viel kostet die Behandlung?","fr":"combien coûte la consultation ?"},{"id":"f585","k":"wort","c":"Bank","de":"inklusive Steuer","fr":"toutes taxes comprises (TTC)","aus":"tut taks kõ-priz"},{"id":"f586","k":"wort","c":"Alltag","de":"die Miete","fr":"le loyer","aus":"lwa-je"},{"id":"f587","k":"wort","c":"Smalltalk","de":"Wie war's?","fr":"ça s'est bien passé ?"},{"id":"f588","k":"wort","c":"Uni","de":"die Grafik","fr":"le graphique"},{"id":"f589","k":"wort","c":"Einkaufen","de":"zum Hier-Essen","fr":"sur place"},{"id":"f590","k":"wort","c":"Alltag","de":"der Vermieter","fr":"le propriétaire","aus":"pro-pri-je-tär"},{"id":"f591","k":"wort","c":"Behörden","de":"einen Antrag stellen","fr":"faire une demande"},{"id":"f592","k":"wort","c":"Arzt","de":"Wann sind die Ergebnisse da?","fr":"les résultats seront prêts quand ?"},{"id":"f593","k":"wort","c":"Smalltalk","de":"Es war toll","fr":"c'était super","aus":"se-tä"},{"id":"f594","k":"wort","c":"Uni","de":"die Daten","fr":"les données (f)","aus":"do-ne"},{"id":"f595","k":"wort","c":"Bank","de":"Es ist nicht genug Geld auf dem Konto","fr":"le solde est insuffisant","aus":"ẽ-sü-fi-zã"},{"id":"f596","k":"wort","c":"Einkaufen","de":"Die Rechnung, bitte","fr":"l'addition, s'il vous plaît","aus":"la-di-sjõ"},{"id":"f597","k":"wort","c":"Alltag","de":"der Mitbewohner / die Mitbewohnerin","fr":"un colocataire / une colocataire","aus":"ko-lo-ka-tär"},{"id":"f598","k":"wort","c":"Behörden","de":"die Genehmigung","fr":"une autorisation"},{"id":"f599","k":"wort","c":"Smalltalk","de":"Ich hatte viel Spaß","fr":"je me suis bien amusé","aus":"bjẽ-na-mü-ze"},{"id":"f600","k":"wort","c":"Uni","de":"das Ergebnis","fr":"le résultat","aus":"re-zül-ta"},{"id":"f601","k":"wort","c":"Einkaufen","de":"Ist das scharf?","fr":"c'est piquant ?","aus":"pi-kã"},{"id":"f602","k":"wort","c":"Arzt","de":"Ich bin geimpft","fr":"je suis vacciné","aus":"vak-si-ne"},{"id":"f603","k":"wort","c":"Alltag","de":"der Schlüssel","fr":"la clé","aus":"kle"},{"id":"f604","k":"wort","c":"Bank","de":"Ich zahle es dir zurück","fr":"je te rembourse","aus":"rã-burs"},{"id":"f605","k":"wort","c":"Behörden","de":"die Gemeinde (für Beglaubigungen)","fr":"la commune","aus":"ko-mün"},{"id":"f606","k":"wort","c":"Smalltalk","de":"Können wir uns duzen?","fr":"on peut se tutoyer ?","aus":"tü-twa-je"},{"id":"f607","k":"wort","c":"Uni","de":"das Ziel","fr":"un objectif","aus":"ob-shek-tif"},{"id":"f608","k":"wort","c":"Einkaufen","de":"Ich bin Vegetarier","fr":"je suis végétarien","aus":"ve-she-ta-rjẽ"},{"id":"f609","k":"wort","c":"Alltag","de":"die Waschmaschine","fr":"la machine à laver","aus":"ma-schin"},{"id":"f610","k":"wort","c":"Arzt","de":"die Impfung","fr":"le vaccin","aus":"vak-sẽ"},{"id":"f611","k":"wort","c":"Bank","de":"Du schuldest mir ...","fr":"tu me dois ..."},{"id":"f612","k":"wort","c":"Alltag","de":"der Mülleimer","fr":"la poubelle","aus":"pu-bäl"},{"id":"f613","k":"wort","c":"Smalltalk","de":"Was hältst du von ...?","fr":"tu penses quoi de ... ?"},{"id":"f614","k":"wort","c":"Uni","de":"die Lösung","fr":"la solution"},{"id":"f615","k":"wort","c":"Einkaufen","de":"das Trinkgeld","fr":"le pourboire","aus":"pur-bwar"},{"id":"f616","k":"wort","c":"Behörden","de":"der marokkanische Personalausweis","fr":"la CIN (carte nationale)","aus":"se-i-än"},{"id":"f617","k":"wort","c":"Arzt","de":"der Rücken","fr":"le dos","aus":"do"},{"id":"f618","k":"wort","c":"Alltag","de":"putzen","fr":"faire le ménage","aus":"me-nash"},{"id":"f619","k":"wort","c":"Bank","de":"Wer zahlt?","fr":"qui paie ?","aus":"ki pä"},{"id":"f620","k":"wort","c":"Smalltalk","de":"Wie findest du ...?","fr":"tu trouves comment ... ?"},{"id":"f621","k":"wort","c":"Uni","de":"zum Beispiel","fr":"par exemple","aus":"pa-reg-zãpl"},{"id":"f622","k":"wort","c":"Einkaufen","de":"geöffnet / geschlossen","fr":"ouvert / fermé","aus":"u-vär"},{"id":"f623","k":"wort","c":"Behörden","de":"das Blatt / Formularseite","fr":"la feuille","aus":"föj"},{"id":"f624","k":"wort","c":"Alltag","de":"kaputt (Gerät)","fr":"en panne","aus":"ã pan"},{"id":"f625","k":"wort","c":"Arzt","de":"die Brust","fr":"la poitrine","aus":"pwa-trin"},{"id":"f626","k":"wort","c":"Smalltalk","de":"Ich bin zum ersten Mal in Marokko","fr":"c'est la première fois que je viens au Maroc"},{"id":"f627","k":"wort","c":"Uni","de":"erstens","fr":"premièrement","aus":"prö-mjär-mã"},{"id":"f628","k":"wort","c":"Einkaufen","de":"Bis wann haben Sie offen?","fr":"vous fermez à quelle heure ?"},{"id":"f629","k":"wort","c":"Alltag","de":"Es funktioniert nicht","fr":"ça ne marche pas","aus":"sa nö marsch pa"},{"id":"f630","k":"wort","c":"Bank","de":"Ich habe kein Bargeld","fr":"je n'ai pas de liquide"},{"id":"f631","k":"wort","c":"Behörden","de":"Das Büro ist zu","fr":"le bureau est fermé"},{"id":"f632","k":"wort","c":"Arzt","de":"das Knie","fr":"le genou","aus":"shö-nu"},{"id":"f633","k":"wort","c":"Alltag","de":"der Stromausfall","fr":"une coupure de courant","aus":"ku-pür dö ku-rã"},{"id":"f634","k":"wort","c":"Smalltalk","de":"Marokko gefällt mir sehr","fr":"le Maroc me plaît beaucoup"},{"id":"f635","k":"wort","c":"Uni","de":"außerdem","fr":"en plus","aus":"ã plüs"},{"id":"f636","k":"wort","c":"Einkaufen","de":"die Kleidung","fr":"les vêtements (m)","aus":"vät-mã"},{"id":"f637","k":"wort","c":"Behörden","de":"Es ist Mittagspause","fr":"c'est la pause déjeuner"},{"id":"f638","k":"wort","c":"Bank","de":"Nehmen Sie Karte?","fr":"vous acceptez la carte ?","aus":"vu-zak-sep-te"},{"id":"f639","k":"wort","c":"Alltag","de":"das WLAN-Passwort","fr":"le mot de passe du wifi","aus":"mo d pas dü wi-fi"},{"id":"f640","k":"wort","c":"Smalltalk","de":"Das ist sehr lecker","fr":"c'est délicieux","aus":"de-li-sjö"},{"id":"f641","k":"wort","c":"Uni","de":"einerseits ... andererseits","fr":"d'un côté ... de l'autre"},{"id":"f642","k":"wort","c":"Einkaufen","de":"die Schuhe","fr":"les chaussures (f)","aus":"scho-sür"},{"id":"f643","k":"wort","c":"Arzt","de":"das Ohr","fr":"une oreille","aus":"o-räj"},{"id":"f644","k":"wort","c":"Alltag","de":"Es gibt kein Wasser","fr":"il n'y a pas d'eau","aus":"do"},{"id":"f645","k":"wort","c":"Behörden","de":"Kommen Sie nach ... wieder","fr":"revenez après ..."},{"id":"f646","k":"wort","c":"Bank","de":"Kann man mit Karte zahlen?","fr":"on peut payer par carte ?"},{"id":"f647","k":"wort","c":"Smalltalk","de":"Geht's dir gut?","fr":"tu vas bien ?"},{"id":"f648","k":"wort","c":"Uni","de":"dagegen / hingegen","fr":"par contre","aus":"par kõtr"},{"id":"f649","k":"wort","c":"Einkaufen","de":"das Geschenk","fr":"le cadeau","aus":"ka-do"},{"id":"f650","k":"wort","c":"Alltag","de":"reparieren","fr":"réparer (je répare)"},{"id":"f651","k":"wort","c":"Arzt","de":"das Auge / die Augen","fr":"un œil / les yeux","aus":"ö-nöj / le-zjö"},{"id":"f652","k":"wort","c":"Behörden","de":"Haben Sie das Original dabei?","fr":"vous avez l'original ?"},{"id":"f653","k":"wort","c":"Smalltalk","de":"Was ist los?","fr":"qu'est-ce qui se passe ?","aus":"käs-ki s pas"},{"id":"f654","k":"wort","c":"Uni","de":"zusammenfassend","fr":"en résumé"},{"id":"f655","k":"wort","c":"Einkaufen","de":"nicht teuer","fr":"pas cher"},{"id":"f656","k":"wort","c":"Alltag","de":"Es ist heiß","fr":"il fait chaud","aus":"il fä scho"},{"id":"f657","k":"wort","c":"Bank","de":"der Beleg / die Quittung","fr":"le reçu","aus":"rö-sü"},{"id":"f658","k":"wort","c":"Arzt","de":"der Magen","fr":"un estomac","aus":"es-to-ma"},{"id":"f659","k":"wort","c":"Behörden","de":"die Polizei rufen","fr":"appeler la police"},{"id":"f660","k":"wort","c":"Alltag","de":"Es regnet","fr":"il pleut","aus":"il plö"},{"id":"f661","k":"wort","c":"Smalltalk","de":"Ich habe viel zu tun","fr":"j'ai beaucoup de travail"},{"id":"f662","k":"wort","c":"Uni","de":"Ich habe eine Idee","fr":"j'ai une idée"},{"id":"f663","k":"wort","c":"Einkaufen","de":"das Schnäppchen","fr":"une bonne affaire","aus":"bo-na-fär"},{"id":"f664","k":"wort","c":"Bank","de":"die Geheimzahl eingeben","fr":"taper le code"},{"id":"f665","k":"wort","c":"Alltag","de":"das Frühstück","fr":"le petit-déjeuner","aus":"pti de-shö-ne"},{"id":"f666","k":"wort","c":"Arzt","de":"die Haut","fr":"la peau","aus":"po"},{"id":"f667","k":"wort","c":"Behörden","de":"das Bußgeld / der Strafzettel","fr":"une amende","aus":"a-mãd"},{"id":"f668","k":"wort","c":"Smalltalk","de":"interessant","fr":"intéressant","aus":"ẽ-te-re-sã"},{"id":"f669","k":"wort","c":"Uni","de":"Was denkst du darüber?","fr":"qu'est-ce que tu en penses ?","aus":"käs-kö tü ã pãs"},{"id":"f670","k":"wort","c":"Einkaufen","de":"gebraucht","fr":"d'occasion","aus":"do-ka-zjõ"},{"id":"f671","k":"wort","c":"Alltag","de":"das Mittagessen","fr":"le déjeuner","aus":"de-shö-ne"},{"id":"f672","k":"wort","c":"Bank","de":"bestätigen","fr":"valider"},{"id":"f673","k":"wort","c":"Arzt","de":"das Herz","fr":"le cœur","aus":"kör"},{"id":"f674","k":"wort","c":"Behörden","de":"die Versicherung","fr":"une assurance","aus":"a-sü-rãs"},{"id":"f675","k":"wort","c":"Smalltalk","de":"Ich vermisse meine Familie","fr":"ma famille me manque","aus":"mãk"},{"id":"f676","k":"wort","c":"Uni","de":"Ich stimme ... zu","fr":"je suis d'accord avec ..."},{"id":"f677","k":"wort","c":"Einkaufen","de":"neu","fr":"neuf / neuve","aus":"nöf / növ"},{"id":"f678","k":"wort","c":"Alltag","de":"mein Akku ist leer","fr":"je n'ai plus de batterie","aus":"ba-tri"}];
+const GOAL = new Date(2026, 11, 1); // 1. Dezember 2026
+const KEY = "francais-kartei-v1";
+const APP = "francais";
+const STEPS = [1, 10], RELEARN = [10];
+const MIN = 60000, DAY = 86400000;
+
+/* ---------- Zustand ---------- */
+function fresh(){ return {v:1, app:APP, c:{}, ed:{}, cu:[], set:{np:16, dir:"de", auto:true, slow:false, voice:""}, day:{d:"", n:0, r:0}, t:0}; }
+function load(data){ const f = fresh(); const s = Object.assign(f, data); s.set = Object.assign(fresh().set, data && data.set); s.app = APP; return s; }
+let S = fresh();
+try { const raw = localStorage.getItem(KEY); if (raw) S = load(JSON.parse(raw)); } catch(e){}
+
+function dayKey(ts){ const d = new Date(ts - 4*3600000); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+function dayStart(ts){ const d = new Date(ts - 4*3600000); d.setHours(4,0,0,0); return d.getTime(); }
+function rollDay(){ const k = dayKey(Date.now()); if (S.day.d !== k) S.day = {d:k, n:0, r:0}; }
+
+let CARDS = [], BYID = {};
+function buildCards(){
+  const custom = (S.cu||[]).map(x => Object.assign({k:"wort", c:"Eigene"}, x));
+  CARDS = [].concat(BASE.filter(c=>c.k!=="wort"), custom, BASE.filter(c=>c.k==="wort"));
+  BYID = {};
+  CARDS.forEach(c => BYID[c.id] = c);
+}
+function view(c){ const e = S.ed[c.id]; return e ? Object.assign({}, c, e) : c; }
+
+/* ---------- Wiederholungs-Logik (angelehnt an Anki) ---------- */
+function schedule(prev, g, now){
+  let [s, due, ivl, ease, reps, lapses, step] = prev ? prev.slice() : [0,0,0,2.5,0,0,0];
+  const today = dayStart(now);
+  if (s === 0 || s === 1 || s === 3){
+    const steps = s === 3 ? RELEARN : STEPS;
+    const was = s; if (s === 0) s = 1;
+    if (g === 1){ step = 0; due = now + steps[0]*MIN; }
+    else if (g === 2){ due = now + Math.round(steps[Math.min(step,steps.length-1)]*1.5)*MIN; }
+    else if (g === 3){
+      step++;
+      if (step >= steps.length){ s = 2; step = 0; ivl = was === 3 ? Math.max(1, ivl) : 1; due = today + ivl*DAY; }
+      else due = now + steps[step]*MIN;
+    } else { s = 2; step = 0; ivl = was === 3 ? Math.max(1, ivl) + 1 : 4; due = today + ivl*DAY; }
+  } else {
+    if (g === 1){ lapses++; ease = Math.max(1.3, ease - .2); ivl = Math.max(1, Math.round(ivl*.3)); s = 3; step = 0; due = now + RELEARN[0]*MIN; }
+    else {
+      if (g === 2){ ivl = Math.max(ivl+1, Math.round(ivl*1.2)); ease = Math.max(1.3, ease - .15); }
+      if (g === 3){ ivl = Math.max(ivl+1, Math.round(ivl*ease)); }
+      if (g === 4){ ivl = Math.max(ivl+2, Math.round(ivl*ease*1.3)); ease += .15; }
+      ivl = Math.min(ivl, 365); due = today + ivl*DAY;
+    }
+  }
+  return [s, due, ivl, Math.round(ease*100)/100, reps+1, lapses, step];
+}
+function fmt(ms){
+  const m = Math.round(ms/MIN);
+  if (m < 60) return "<" + Math.max(1,m) + " Min";
+  const d = Math.round(ms/DAY);
+  if (d < 1) return Math.round(m/60) + " Std";
+  if (d === 1) return "1 Tag";
+  if (d < 30) return d + " Tage";
+  if (d < 365) return Math.round(d/30) + " Mon";
+  return "1 Jahr";
+}
+
+/* ---------- Warteschlange ---------- */
+let altToggle = false;
+function stats(now){
+  let learn=0, review=0, newLeft = Math.max(0, S.set.np - S.day.n), nw=0, seen=0, solid=0;
+  for (const c of CARDS){
+    const x = S.c[c.id];
+    if (!x){ nw++; continue; }
+    seen++;
+    if ((x[0]===1||x[0]===3) && x[1] <= now) learn++;
+    else if (x[0]===2 && x[1] <= now) review++;
+    if (x[0]===2 && x[2] >= 21) solid++;
+  }
+  return {learn, review, newToday: Math.min(newLeft, nw), nw, seen, solid};
+}
+function nextCard(now, avoid){
+  let lBest=null, rBest=null, ahead=null;
+  for (const c of CARDS){
+    const x = S.c[c.id]; if (!x || c.id===avoid) continue;
+    if (x[0]===1||x[0]===3){
+      if (x[1] <= now){ if (!lBest || x[1] < S.c[lBest.id][1]) lBest = c; }
+      else if (x[1] <= now + 20*MIN){ if (!ahead || x[1] < S.c[ahead.id][1]) ahead = c; }
+    } else if (x[0]===2 && x[1] <= now){ if (!rBest || x[1] < S.c[rBest.id][1]) rBest = c; }
+  }
+  if (lBest) return lBest;
+  const nw = S.day.n < S.set.np ? CARDS.find(c => !S.c[c.id]) : null;
+  if (rBest && nw){ altToggle = !altToggle; return altToggle ? rBest : nw; }
+  if (rBest || nw) return rBest || nw;
+  if (ahead) return ahead;
+  if (avoid){ const x = S.c[avoid]; if (x && (x[0]===1||x[0]===3) && x[1] <= now + 20*MIN) return BYID[avoid]; }
+  return null;
+}
+
+/* ---------- Sprachausgabe (Stimmen des Geräts, fr-FR) ---------- */
+const TTS = {ok: typeof window.speechSynthesis !== "undefined" && typeof window.SpeechSynthesisUtterance !== "undefined", voices: []};
+function loadVoices(){
+  if (!TTS.ok) return;
+  try {
+    TTS.voices = speechSynthesis.getVoices().filter(v => /^fr([-_]|$)/i.test(v.lang))
+      .sort((a,b) => (rankVoice(b) - rankVoice(a)) || a.name.localeCompare(b.name));
+  } catch(e){ TTS.voices = []; }
+}
+function rankVoice(v){ const l = v.lang.replace("_","-").toLowerCase(); return (l === "fr-fr" ? 2 : 0) + (v.localService ? 1 : 0); }
+function pickVoice(){ return TTS.voices.find(v => v.voiceURI === S.set.voice) || TTS.voices[0] || null; }
+function speechText(t){
+  return String(t||"")
+    .replace(/\((m|f|pl)\)/gi, " ")
+    .replace(/\(([^)]*)\)/g, ", $1")
+    .replace(/\.\.\.|…/g, " ")
+    .replace(/\s*\/\s*/g, ", ")
+    .replace(/\s+([?!])/g, "$1")
+    .replace(/\s+,/g, ",").replace(/,\s*,/g, ",")
+    .replace(/\s+/g, " ").replace(/^[,\s]+|[,\s]+$/g, "").trim();
+}
+function speak(text, btn){
+  if (!TTS.ok){ toast("Sprachausgabe wird hier nicht unterstützt"); return; }
+  const s = speechText(text); if (!s) return;
+  if (!TTS.voices.length) loadVoices();
+  const u = new SpeechSynthesisUtterance(s);
+  u.lang = "fr-FR";
+  const v = pickVoice(); if (v){ u.voice = v; u.lang = v.lang; }
+  u.rate = S.set.slow ? 0.7 : 1;
+  if (btn){ btn.classList.add("on"); const off = () => btn.classList.remove("on"); u.onend = off; u.onerror = off; }
+  try {
+    if (speechSynthesis.speaking || speechSynthesis.pending){ speechSynthesis.cancel(); setTimeout(() => speechSynthesis.speak(u), 60); }
+    else speechSynthesis.speak(u);
+  } catch(e){ toast("Vorlesen hat nicht geklappt"); }
+}
+function stopSpeech(){ try { if (TTS.ok) speechSynthesis.cancel(); } catch(e){} }
+if (TTS.ok){
+  loadVoices();
+  try { speechSynthesis.addEventListener("voiceschanged", () => { loadVoices(); if (tab === "setup") renderSetup(); }); } catch(e){}
+}
+const sayBtn = t => `<button class="say" data-say="${esc(t)}" aria-label="Vorlesen" type="button"><svg><use href="#hp"/></svg></button>`;
+
+/* ---------- Speichern (offline, auf dem Gerät) ---------- */
+function touch(){
+  S.t = Date.now();
+  try { localStorage.setItem(KEY, JSON.stringify(S)); setSync("ok"); } catch(e){ setSync("err"); }
+}
+function setSync(m){
+  const el = document.getElementById("sync");
+  el.className = "sync " + (m==="ok"?"on":"");
+  el.querySelector("span").textContent = m==="ok" ? "Gespeichert" : m==="err" ? "Speichern fehlgeschlagen" : "Offline bereit";
+}
+function lastBackupText(){
+  if (!S.bk) return "Noch keine Sicherung gemacht.";
+  const d = Math.floor((Date.now()-S.bk)/DAY);
+  return "Letzte Sicherung: " + (d<1 ? "heute" : d===1 ? "gestern" : "vor " + d + " Tagen") + ".";
+}
+async function exportBackup(){
+  S.bk = Date.now(); touch();
+  const d = new Date(), stamp = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  const name = "francais-sicherung-" + stamp + ".json";
+  const blob = new Blob([JSON.stringify(S)], {type:"application/json"});
+  try {
+    const file = new File([blob], name, {type:"application/json"});
+    if (navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:"Français Sicherung"}); toast("Sicherung bereit"); return; }
+  } catch(e){ if (e && e.name === "AbortError") return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();}, 1000);
+  toast("Sicherung gespeichert");
+}
+function isOwnBackup(data){
+  if (!data || typeof data.c !== "object" || data.c === null) return false;
+  if (data.app) return data.app === APP;
+  // ältere Dateien ohne Kennung: nur akzeptieren, wenn keine fremden Karten-IDs drin sind
+  return Object.keys(data.c).every(k => /^(z|f|u)/.test(k));
+}
+function importBackup(file){
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const data = JSON.parse(r.result);
+      if (!data || typeof data.c !== "object") throw 0;
+      if (!isOwnBackup(data)){ toast("Das ist eine Sicherung einer anderen App (z. B. Darija), nicht geladen"); return; }
+      S = load(data); buildCards(); rollDay(); touch(); study = null;
+      toast("Sicherung geladen: " + Object.keys(S.c).length + " Karten mit Lernstand"); render();
+    } catch(e){ toast("Das ist keine gültige Sicherungsdatei"); }
+  };
+  r.readAsText(file);
+}
+function connect(){
+  setSync("ok");
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js", {scope:"./"}).catch(()=>{});
+}
+
+/* ---------- Oberfläche ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+let tab = "lernen", study = null; // study = {card, shown, front}
+function toast(t){ const el = document.createElement("div"); el.className="toast"; el.textContent=t; document.body.appendChild(el); setTimeout(()=>el.remove(), 2200); }
+
+function render(){
+  rollDay();
+  document.querySelectorAll("nav button").forEach(b => b.setAttribute("aria-current", b.dataset.tab===tab ? "page" : "false"));
+  if (tab === "lernen") study ? renderStudy() : renderHome();
+  else if (tab === "kartei") renderList();
+  else renderSetup();
+}
+
+function daysLeft(){ return Math.max(1, Math.ceil((GOAL - dayStart(Date.now())) / DAY)); }
+
+function renderHome(){
+  const now = Date.now(), s = stats(now);
+  const total = CARDS.length, learning = s.seen - s.solid;
+  const rec = Math.ceil(s.nw / daysLeft());
+  const due = s.learn + s.review + s.newToday;
+  const deck = (k, name) => {
+    const cs = CARDS.filter(c => c.k===k);
+    const seen = cs.filter(c => S.c[c.id]).length, solid = cs.filter(c => S.c[c.id] && S.c[c.id][0]===2 && S.c[c.id][2]>=21).length;
+    return `<div class="deck"><b>${name}</b><small>${seen} / ${cs.length} gesehen</small>
+      <div class="bar"><i class="s" style="width:${solid/cs.length*100}%"></i><i class="le" style="width:${(seen-solid)/cs.length*100}%"></i></div></div>`;
+  };
+  $("#view").innerHTML = `
+  <section class="panel" style="display:flex;flex-direction:column;gap:16px">
+    <div class="lbl">Heute</div>
+    <div class="today">
+      <div class="n"><b>${s.newToday}</b><span>neu</span></div>
+      <div class="l"><b>${s.learn}</b><span>am Lernen</span></div>
+      <div class="r"><b>${s.review}</b><span>Wiederholung</span></div>
+    </div>
+    <button class="btn primary" id="go">${due ? "Lernen starten" : "Für heute fertig"}</button>
+  </section>
+  ${Object.keys(S.c).length >= 30 && (!S.bk || Date.now()-S.bk > 7*DAY) ? `<section class="panel" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap"><span style="font-size:14px">${S.bk ? "Deine letzte Sicherung ist über eine Woche alt." : "Du hast noch keine Sicherung deines Lernstands."}</span><button class="btn" id="bk-home">Jetzt sichern</button></section>` : ""}
+  <section class="panel goal">
+    <div class="lbl">Ziel 1. Dezember</div>
+    <div style="display:flex;align-items:baseline;gap:8px;margin:8px 0 10px"><b style="font-family:var(--display);font-size:30px;font-variant-numeric:tabular-nums">${s.seen}</b><span style="color:var(--muted)">von ${total} Karten gesehen</span></div>
+    <div class="bar"><i class="s" style="width:${s.solid/total*100}%"></i><i class="le" style="width:${learning/total*100}%"></i></div>
+    <div class="legend"><span style="--c:var(--good)">sitzt (${s.solid})</span><span style="--c:var(--saffron)">im Aufbau (${learning})</span><span style="--c:var(--sunk)">neu (${s.nw})</span></div>
+    <p>${s.nw ? `Noch ${daysLeft()} Tage. Für alle Karten bis dahin brauchst du etwa <b>${rec} neue pro Tag</b>, eingestellt sind ${S.set.np}.` : "Alle Karten sind eingeführt. Jetzt nur noch wiederholen."}</p>
+  </section>
+  <section class="panel decks">
+    <div class="lbl">Stapel in Lernreihenfolge</div>
+    ${deck("num","1 · Zahlen")}${deck("wort","2 · Wörter und Sätze nach Wichtigkeit")}
+  </section>`;
+  if ($("#bk-home")) $("#bk-home").onclick = exportBackup;
+  $("#go").onclick = () => {
+    const c = nextCard(Date.now());
+    if (!c){ toast("Für heute ist alles erledigt"); return; }
+    startCard(c); render();
+  };
+}
+
+function startCard(c){
+  const d = S.set.dir;
+  study = {card:c, shown:false, front: d==="mix" ? (Math.random()<.5?"de":"fr") : d};
+}
+
+function cardFace(c, shown, front){
+  const v = view(c);
+  const frRow = `<div class="frl"><div class="fr${v.fr.length > 26 ? " long" : ""}" lang="fr">${esc(v.fr)}</div>${sayBtn(v.fr)}</div>`;
+  const aus = v.aus ? `<div class="aus">${esc(v.aus)}</div>` : "";
+  const big = c.k === "num" && front === "de";
+  if (front === "de"){
+    const f = `<div class="front${big?" big":""}">${esc(v.de)}</div>`;
+    return shown ? `${f}<div class="hr"></div>${frRow}${aus}` : f;
+  }
+  return shown ? `${frRow}${aus}<div class="hr"></div><div class="front${c.k==="num"?" big":""}">${esc(v.de)}</div>` : `${frRow}${aus}`;
+}
+
+function setShown(val){
+  const was = study.shown;
+  study.shown = val;
+  renderStudy();
+  if (val && !was && S.set.auto){ const b = document.querySelector("#card .say"); speak(view(study.card).fr, b); }
+  if (!val) stopSpeech();
+}
+
+function renderStudy(){
+  const now = Date.now(), s = stats(now), c = study.card, x = S.c[c.id];
+  const tag = !x ? "neu" : (x[0]===2 ? "Wiederholung" : "am Lernen");
+  let grades = "";
+  if (study.shown){
+    const names = ["Nochmal","Schwer","Gut","Leicht"];
+    grades = `<div class="grades">${[1,2,3,4].map(g => {
+      const nx = schedule(x, g, now);
+      return `<button class="g${g}" data-g="${g}">${names[g-1]}<small>${fmt(nx[1]-now)}</small></button>`;
+    }).join("")}</div>`;
+  }
+  $("#view").innerHTML = `
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div class="counts"><span class="n">${s.newToday} neu</span><span class="l">${s.learn} lernen</span><span class="r">${s.review} fällig</span><button class="x" id="undo" ${hist.length?"":"disabled"} style="margin-left:auto">↶ Zurück</button><button class="x" id="stop" style="margin-left:0">Pause</button></div>
+    <div class="card flip" id="card" role="button" tabindex="0" aria-label="${study.shown?"Karte":"Antwort zeigen"}">
+      <span class="lbl cat">${esc(view(c).c)}</span><span class="tag">${tag}</span>
+      ${cardFace(c, study.shown, study.front)}
+      ${study.shown ? `<button class="edit" id="edit">Korrigieren</button>` : `<div class="tap">Tippen zum Aufdecken</div>`}
+    </div>
+    ${study.shown ? grades : `<button class="btn primary" id="show">Antwort zeigen</button>`}
+  </div>`;
+  $("#card").onclick = e => {
+    const sb = e.target.closest(".say");
+    if (sb){ e.stopPropagation(); speak(sb.dataset.say, sb); return; }
+    if (e.target.closest("#edit")) return;
+    setShown(!study.shown);
+  };
+  if ($("#show")) $("#show").onclick = () => { if (!study.shown) setShown(true); };
+  $("#undo").onclick = undo;
+  if ($("#edit")) $("#edit").onclick = e => { e.stopPropagation(); openEdit(c.id); };
+  $("#stop").onclick = () => { stopSpeech(); study = null; render(); };
+  document.querySelectorAll(".grades button").forEach(b => b.onclick = () => grade(+b.dataset.g));
+}
+
+const hist = [];
+function undo(){
+  const h = hist.pop(); if (!h) return;
+  if (h.prev) S.c[h.id] = h.prev; else { delete S.c[h.id]; S.day.n = Math.max(0, S.day.n - 1); }
+  S.day.r = Math.max(0, S.day.r - 1);
+  touch();
+  study = {card: BYID[h.id], shown: true, front: h.front};
+  tab = "lernen"; render();
+  toast("Bewertung zurückgenommen");
+}
+function grade(g){
+  stopSpeech();
+  const now = Date.now(), c = study.card, prev = S.c[c.id];
+  hist.push({id: c.id, prev: prev ? prev.slice() : null, front: study.front});
+  if (hist.length > 30) hist.shift();
+  if (!prev) S.day.n++;
+  S.c[c.id] = schedule(prev, g, now);
+  S.day.r++;
+  touch();
+  const nx = nextCard(Date.now(), c.id);
+  if (nx) startCard(nx);
+  else study = null;
+  if (study){ renderStudy(); return; }
+  $("#view").innerHTML = `<div class="done panel"><svg class="star"><use href="#bulle"/></svg><h2>C'est fini, bravo !</h2><p>Für heute ist alles geschafft. Neue Wiederholungen kommen morgen. Probier die Sätze heute an der Uni oder beim Einkaufen aus.</p><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"><button class="btn" id="undo2">↶ Letzte Bewertung zurück</button><button class="btn" id="back">Zur Übersicht</button></div></div>`;
+  $("#back").onclick = render;
+  $("#undo2").onclick = undo;
+}
+
+document.addEventListener("keydown", e => {
+  if (tab !== "lernen" || !study || document.querySelector(".sheet")) return;
+  if (e.key === " " || e.key === "Enter"){ e.preventDefault(); setShown(!study.shown); }
+  else if (study.shown && "1234".includes(e.key)) grade(+e.key);
+  else if (e.key === "z" || e.key === "Backspace") undo();
+  else if (e.key === "v"){ const b = document.querySelector("#card .say"); if (b) speak(b.dataset.say, b); }
+});
+
+/* Kartei-Liste */
+let q = "", filt = "alle", limit = 150;
+function status(id){
+  const x = S.c[id];
+  if (!x) return ["neu",""];
+  if (x[0]!==2) return ["lernt","le"];
+  if (x[2] >= 21) return ["sitzt","ok"];
+  return [fmt(x[2]*DAY), "rv"];
+}
+function fold(s){ return String(s==null?"":s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+function renderList(){
+  const nq = fold(q);
+  const items = CARDS.filter(c => {
+    const st = status(c.id)[0];
+    if (filt==="neu" && st!=="neu") return false;
+    if (filt==="lernt" && (st==="neu"||st==="sitzt")) return false;
+    if (filt==="sitzt" && st!=="sitzt") return false;
+    if (!nq) return true;
+    const v = view(c);
+    return fold(v.de).includes(nq) || fold(v.fr).includes(nq) || fold(v.c).includes(nq) || fold(v.aus).includes(nq);
+  });
+  const chip = (k,n) => `<button class="chip" data-f="${k}" aria-pressed="${filt===k}">${n}</button>`;
+  $("#view").innerHTML = `
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <input class="search" id="q" type="search" placeholder="Suchen: deutsch, französisch oder Thema" value="${esc(q)}" autocomplete="off">
+    <div class="chips">${chip("alle","Alle")}${chip("neu","Neu")}${chip("lernt","Im Aufbau")}${chip("sitzt","Sitzt")}<button class="chip" id="add" style="margin-left:auto">+ Eigene Karte</button></div>
+    <div class="lbl">${items.length} Karten</div>
+    <div class="list">${items.slice(0,limit).map(c => { const v = view(c), [t,cl] = status(c.id);
+      return `<button class="row" data-id="${c.id}"><span class="d"><span>${esc(v.de)}</span><div><b lang="fr">${esc(v.fr)}</b>${v.aus ? " · " + esc(v.aus) : ""}</div></span><span class="st ${cl}">${t}</span></button>`; }).join("") || `<div class="more">Nichts gefunden.</div>`}</div>
+    ${items.length > limit ? `<button class="btn" id="more">Weitere ${Math.min(150, items.length-limit)} anzeigen</button>` : ""}
+  </div>`;
+  const qi = $("#q");
+  qi.oninput = () => { q = qi.value; limit = 150; renderList(); const n = $("#q"); n.focus(); n.setSelectionRange(n.value.length, n.value.length); };
+  document.querySelectorAll(".chip[data-f]").forEach(b => b.onclick = () => { filt = b.dataset.f; limit = 150; renderList(); });
+  document.querySelectorAll(".row").forEach(b => b.onclick = () => openEdit(b.dataset.id));
+  $("#add").onclick = () => openEdit(null);
+  if ($("#more")) $("#more").onclick = () => { limit += 150; renderList(); };
+}
+
+/* Bearbeiten / eigene Karte */
+function openEdit(id){
+  const c = id ? BYID[id] : null, v = c ? view(c) : {de:"",fr:"",aus:""};
+  const isCustom = c && String(c.id).startsWith("u");
+  const el = document.createElement("div"); el.className = "sheet";
+  el.innerHTML = `<form id="ef">
+    <h2>${c ? "Karte korrigieren" : "Eigene Karte"}</h2>
+    <label for="e-de">Deutsch<input id="e-de" value="${esc(v.de)}" required></label>
+    <label for="e-fr">Französisch (Nomen mit le, la, un, une)<input id="e-fr" value="${esc(v.fr)}" required autocapitalize="off" lang="fr"></label>
+    <label for="e-aus">Aussprachehilfe (optional)<input id="e-aus" value="${esc(v.aus)}" autocapitalize="off"></label>
+    <div class="acts">
+      <button type="button" class="btn" id="e-say" style="margin-right:auto">▶ Anhören</button>
+      ${c && S.ed[c.id] ? `<button type="button" class="btn" id="e-reset">Original</button>` : ""}
+      ${isCustom ? `<button type="button" class="btn danger" id="e-del">Löschen</button>` : ""}
+      <button type="button" class="btn" id="e-cancel">Abbrechen</button>
+      <button type="submit" class="btn save">Speichern</button>
+    </div></form>`;
+  document.body.appendChild(el);
+  const close = () => el.remove();
+  el.addEventListener("click", e => { if (e.target === el) close(); });
+  el.querySelector("#e-cancel").onclick = close;
+  el.querySelector("#e-say").onclick = () => speak(el.querySelector("#e-fr").value);
+  const r = el.querySelector("#e-reset"); if (r) r.onclick = () => { delete S.ed[c.id]; touch(); close(); toast("Original wiederhergestellt"); render(); };
+  const d = el.querySelector("#e-del"); if (d) d.onclick = () => { S.cu = S.cu.filter(x => x.id !== c.id); delete S.c[c.id]; delete S.ed[c.id]; buildCards(); touch(); close(); if (study && study.card.id===c.id) study=null; toast("Karte gelöscht"); render(); };
+  el.querySelector("#ef").onsubmit = e => {
+    e.preventDefault();
+    const val = {de: el.querySelector("#e-de").value.trim(), fr: el.querySelector("#e-fr").value.trim(), aus: el.querySelector("#e-aus").value.trim()};
+    if (!val.de || !val.fr) return;
+    if (!c){ S.cu.push(Object.assign({id:"u"+Date.now().toString(36)}, val)); buildCards(); toast("Karte hinzugefügt, kommt als nächste neue Karte"); }
+    else if (isCustom){ Object.assign(S.cu.find(x => x.id===c.id), val); buildCards(); toast("Gespeichert"); }
+    else { S.ed[c.id] = val; toast("Korrektur gespeichert"); }
+    touch(); close(); render();
+  };
+  setTimeout(() => el.querySelector("#e-de").focus(), 50);
+}
+
+/* Einstellungen */
+let resetArmed = false;
+function renderSetup(){
+  const s = stats(Date.now()), rec = Math.ceil(s.nw / daysLeft());
+  const seg = (v,n) => `<button data-d="${v}" aria-pressed="${S.set.dir===v}">${n}</button>`;
+  const tog = (k,v,n) => `<button data-k="${k}" data-v="${v}" aria-pressed="${S.set[k]===v}">${n}</button>`;
+  const cur = pickVoice();
+  const voiceUi = !TTS.ok
+    ? `<p>Dieser Browser kann nicht vorlesen.</p>`
+    : TTS.voices.length
+      ? `<label class="sl" for="voice"><span>Stimme</span><select class="voice" id="voice">${TTS.voices.map(v => `<option value="${esc(v.voiceURI)}" ${cur && cur.voiceURI===v.voiceURI ? "selected" : ""}>${esc(v.name)} (${esc(v.lang)})</option>`).join("")}</select></label>`
+      : `<p>Keine französische Stimme gefunden. Auf dem iPhone: Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Französisch. Danach die App neu öffnen.</p>`;
+  $("#view").innerHTML = `
+  <div class="set">
+    <section class="panel set">
+      <h3>Neue Karten pro Tag</h3>
+      <div class="range"><input id="np" type="range" min="5" max="40" step="1" value="${S.set.np}" aria-label="Neue Karten pro Tag"><b id="npv">${S.set.np}</b></div>
+      <p>Empfohlen für den 1. Dezember: ${rec} pro Tag. Jede neue Karte bringt in den folgenden Tagen mehrere Wiederholungen mit, rechne mit etwa 1 Minute pro neuer Karte.</p>
+    </section>
+    <section class="panel set">
+      <h3>Was steht vorne auf der Karte?</h3>
+      <div class="seg">${seg("de","Deutsch")}${seg("fr","Französisch")}${seg("mix","Gemischt")}</div>
+      <p>Deutsch vorne trainiert das Sprechen, Französisch vorne das Verstehen.</p>
+    </section>
+    <section class="panel set">
+      <h3>Vorlesen</h3>
+      <div class="sl"><span>Beim Aufdecken automatisch vorlesen</span><div class="seg two">${tog("auto",true,"An")}${tog("auto",false,"Aus")}</div></div>
+      <div class="sl"><span>Tempo</span><div class="seg two">${tog("slow",false,"Normal")}${tog("slow",true,"Langsam")}</div></div>
+      ${voiceUi}
+      ${TTS.ok ? `<button class="btn" id="probe">▶ Probe hören</button>` : ""}
+      <p>Vorgelesen wird mit den Stimmen deines iPhones, das geht auch offline. Erweiterte Stimmen klingen deutlich natürlicher und lassen sich unter Gesprochene Inhalte › Stimmen laden. Auf jeder Karte kannst du außerdem den Lautsprecher antippen.</p>
+    </section>
+    <section class="panel set">
+      <h3>So liest du die Aussprachehilfe</h3>
+      <div class="keys">
+        <b>ã</b><span>nasales a wie in „Restaurant“ (an, en)</span>
+        <b>õ</b><span>nasales o wie in „Bonbon“ (on)</span>
+        <b>ẽ</b><span>nasales ä wie in „Teint“ (in, ain, un)</span>
+        <b>sch</b><span>wie in Schule (ch)</span>
+        <b>sh</b><span>weiches sch wie in Garage (j, g vor e/i)</span>
+        <b>z</b><span>weiches, summendes s wie in Sonne</span>
+        <b>s</b><span>scharfes s wie in Haus</span>
+        <b>ö</b><span>wie in „schön“ (eu, oft auch e)</span>
+        <b>ü</b><span>wie in „Tür“ (u)</span>
+        <b>u</b><span>wie in „gut“ (ou)</span>
+        <b>w</b><span>wie englisch water (oi = wa)</span>
+        <b>r</b><span>Zäpfchen-r, hinten im Hals</span>
+      </div>
+      <p>Die Aussprachehilfe steht nur bei Wörtern, die man nicht so liest, wie man sie schreibt. Endungen wie -e, -s, -t, -ent sind meist stumm. Am genauesten ist der Lautsprecher.</p>
+      <p>Nomen stehen immer mit Artikel, damit du das Geschlecht mitlernst. Bei Wörtern mit l' steht un oder une, sonst sieht man es nicht. Verben stehen als Grundform mit der je-Form in Klammern, z. B. prendre (je prends).</p>
+    </section>
+    <section class="panel set">
+      <h3>Sicherung</h3>
+      <p>Dein Lernstand wird nach jeder Karte automatisch auf diesem Handy gespeichert, getrennt von der Darija-App. Löschst du das App-Symbol oder die Safari-Daten, ist er weg. Sichere ihn deshalb ab und zu in iCloud: „Sicherung speichern“, dann „In Dateien sichern“.</p>
+      <p><b>${lastBackupText()}</b></p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="bk-out" style="background:var(--accent);color:var(--accent-ink)">Sicherung speichern</button><button class="btn" id="bk-in">Sicherung laden</button></div>
+      <input type="file" id="bk-file" accept=".json,application/json" hidden>
+    </section>
+    <section class="panel set">
+      <h3>Fortschritt zurücksetzen</h3>
+      <p>Löscht alle Lernstände. Eigene Karten und Korrekturen bleiben.</p>
+      <button class="btn danger" id="reset">${resetArmed ? "Wirklich alles zurücksetzen?" : "Zurücksetzen"}</button>
+    </section>
+  </div>`;
+  $("#bk-out").onclick = exportBackup;
+  $("#bk-in").onclick = () => $("#bk-file").click();
+  $("#bk-file").onchange = e => { const f = e.target.files[0]; if (f) importBackup(f); e.target.value = ""; };
+  const np = $("#np");
+  np.oninput = () => { $("#npv").textContent = np.value; };
+  np.onchange = () => { S.set.np = +np.value; touch(); };
+  document.querySelectorAll(".seg button[data-d]").forEach(b => b.onclick = () => { S.set.dir = b.dataset.d; touch(); renderSetup(); });
+  document.querySelectorAll(".seg button[data-k]").forEach(b => b.onclick = () => { S.set[b.dataset.k] = b.dataset.v === "true"; touch(); renderSetup(); });
+  if ($("#voice")) $("#voice").onchange = e => { S.set.voice = e.target.value; touch(); speak("Bonjour, ça va ?"); };
+  if ($("#probe")) $("#probe").onclick = () => speak("Bonjour ! Je suis étudiant en échange à Casablanca.");
+  $("#reset").onclick = () => {
+    if (!resetArmed){ resetArmed = true; renderSetup(); setTimeout(()=>{ if (resetArmed){ resetArmed=false; if (tab==="setup") renderSetup(); } }, 5000); return; }
+    resetArmed = false; S.c = {}; S.day = {d:"",n:0,r:0}; touch(); toast("Fortschritt zurückgesetzt"); renderSetup();
+  };
+}
+
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => { stopSpeech(); tab = b.dataset.tab; render(); window.scrollTo(0,0); });
+
+buildCards(); rollDay(); render(); connect();
+</script>
+
+</body></html>
